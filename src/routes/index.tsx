@@ -1,0 +1,68 @@
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { AppLayout } from '../layouts/AppLayout';
+import { AuthLayout } from '../layouts/AuthLayout';
+
+// Public pages
+import LandingPage from '../pages/public/LandingPage';
+import AboutPage from '../pages/public/AboutPage';
+import FeaturesPage from '../pages/public/FeaturesPage';
+import ContactPage from '../pages/public/ContactPage';
+import LoginPage from '../pages/public/LoginPage';
+import RegisterPage from '../pages/public/RegisterPage';
+
+// Authenticated pages
+import DashboardPage from '../pages/app/DashboardPage';
+import ProfilePage from '../pages/app/ProfilePage';
+import ResumePage from '../pages/app/ResumePage';
+import CareerRoadmapPage from '../pages/app/CareerRoadmapPage';
+import SkillGapPage from '../pages/app/SkillGapPage';
+import InterviewPage from '../pages/app/InterviewPage';
+import CodingPage from '../pages/app/CodingPage';
+import LearningPage from '../pages/app/LearningPage';
+import GithubPage from '../pages/app/GithubPage';
+import LinkedinPage from '../pages/app/LinkedinPage';
+import JobsPage from '../pages/app/JobsPage';
+import ProgressPage from '../pages/app/ProgressPage';
+import SettingsPage from '../pages/app/SettingsPage';
+import AdminPage from '../pages/app/AdminPage';
+
+export default function AppRouter() {
+  return (
+    <Routes>
+      {/* Landing page with its standalone full layout */}
+      <Route path="/" element={<LandingPage />} />
+
+      {/* Standalone marketing pages, each a separate page */}
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/features" element={<FeaturesPage />} />
+      <Route path="/contact" element={<ContactPage />} />
+
+      {/* Public Auth routes wrapped by centered AuthLayout */}
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Route>
+
+      {/* Authenticated routes wrapped by Sidebar + Header AppLayout */}
+      <Route element={<AppLayout />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/resume" element={<ResumePage />} />
+        <Route path="/career-roadmap" element={<CareerRoadmapPage />} />
+        <Route path="/skill-gap" element={<SkillGapPage />} />
+        <Route path="/interview" element={<InterviewPage />} />
+        <Route path="/coding" element={<CodingPage />} />
+        <Route path="/learning" element={<LearningPage />} />
+        <Route path="/github" element={<GithubPage />} />
+        <Route path="/linkedin" element={<LinkedinPage />} />
+        <Route path="/jobs" element={<JobsPage />} />
+        <Route path="/progress" element={<ProgressPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/admin" element={<AdminPage />} />
+      </Route>
+
+      {/* Catch-all fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}

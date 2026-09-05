@@ -1,0 +1,677 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ───────────────────────────────────────────────────────────
+   AI CAREER COACH — "Ink & Gold" Design System
+   A placement-readiness platform reads best with the gravitas
+   of a credential: deep ink, warm brass gold for achievement,
+   and a quiet teal for in-progress states. Serif display type
+   borrows from certificates and prospectuses, not SaaS defaults.
+   Tokens:  #090C12 #FAF8F4 #FFFFFF #C8952E #1E7F76 #1B2030
+   ─────────────────────────────────────────────────────────── */
+@layer base {
+  :root {
+    /* Google Stitch Vibrant Interactive Placement Pal Palette */
+    --bg-canvas: #FFF9E9;
+    --bg-surface: #FFF9E9;
+    --bg-elevated: #FAF3DF;
+    --border-subtle: #CDC7AA;
+    --color-primary-text: #1E1C10;
+    --color-secondary-text: #4B4731;
+
+    /* Brand accents from Stitch */
+    --color-accent: #FFE600;
+    --color-accent-soft: #FAF3DF;
+    --color-primary: #6A5F00;
+    --color-primary-container: #FFE600;
+    --color-on-primary-container: #726600;
+    --color-mint: #00F5D4;
+    --color-coral: #FF6B6B;
+    --color-lavender: #9B5DE5;
+
+    /* Surface container scale */
+    --surface-lowest: #FFFFFF;
+    --surface-low: #FAF3DF;
+    --surface-container: #F4EEDA;
+    --surface-high: #EEE8D4;
+
+    --sidebar-width: 264px;
+    --header-height: 68px;
+
+    --font-display: 'Rubik', sans-serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    background-color: #FFF9E9;
+    font-family: var(--font-body);
+    color: #1E1C10;
+    min-height: 100vh;
+  }
+
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    color: var(--color-primary-text);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.12;
+  }
+
+  h1 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    font-family: var(--font-body);
+    color: var(--color-secondary-text);
+    line-height: 1.65;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-family: var(--font-body);
+  }
+
+  /* Numeric / score readouts get the mono treatment across the app */
+  .font-stat,
+  .stat-number {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* ─── Motion ──────────────────────────────────────────────── */
+@keyframes float-up {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+    opacity: 0.35;
+  }
+
+  50% {
+    transform: translateY(-12px);
+    opacity: 0.65;
+  }
+}
+
+@keyframes glow-pulse {
+
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes button-shimmer {
+  0% {
+    left: -120%;
+  }
+
+  60%,
+  100% {
+    left: 150%;
+  }
+}
+
+@keyframes card-shine {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+
+  100% {
+    transform: translateX(300%) skewX(-15deg);
+  }
+}
+
+@keyframes seal-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: rise-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Glassmorphism Keyframes ────────────────────────────── */
+@keyframes shimmer-border {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 15px -3px rgba(184, 132, 42, 0.15);
+  }
+
+  50% {
+    box-shadow: 0 0 25px -3px rgba(184, 132, 42, 0.35);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes mesh-float {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  25% {
+    transform: translate(30px, -20px) scale(1.05);
+  }
+
+  50% {
+    transform: translate(-20px, 15px) scale(0.95);
+  }
+
+  75% {
+    transform: translate(15px, 25px) scale(1.02);
+  }
+}
+
+@keyframes stagger-rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes border-travel {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes score-fill {
+  from {
+    stroke-dashoffset: 283;
+  }
+}
+
+@keyframes orb-drift {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+
+  33% {
+    transform: translate(15px, -25px) scale(1.15);
+    opacity: 0.5;
+  }
+
+  66% {
+    transform: translate(-10px, 20px) scale(0.9);
+    opacity: 0.35;
+  }
+}
+
+/* Staggered entrance — set --delay inline: style={{ '--delay': '0.1s' }} */
+.animate-stagger {
+  animation: stagger-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--delay, 0s);
+}
+
+/* ─── Glassmorphism Utilities ────────────────────────────── */
+.glass-frost {
+  background: linear-gradient(135deg, rgba(17, 21, 29, 0.6) 0%, rgba(13, 17, 23, 0.5) 100%);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+    0 8px 32px -8px rgba(0, 0, 0, 0.5);
+}
+
+.glass-frost-hover {
+  background: linear-gradient(135deg, rgba(17, 21, 29, 0.55) 0%, rgba(13, 17, 23, 0.45) 100%);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+    0 8px 32px -8px rgba(0, 0, 0, 0.5);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-frost-hover:hover {
+  border-color: rgba(184, 132, 42, 0.35);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    0 12px 40px -8px rgba(0, 0, 0, 0.6),
+    0 0 30px -5px rgba(184, 132, 42, 0.2);
+  transform: translateY(-3px);
+}
+
+.glass-frost-accent {
+  background: linear-gradient(135deg, rgba(184, 132, 42, 0.08) 0%, rgba(17, 21, 29, 0.6) 40%, rgba(13, 17, 23, 0.5) 100%);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(184, 132, 42, 0.2);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+    0 8px 32px -8px rgba(0, 0, 0, 0.5),
+    0 0 20px -6px rgba(184, 132, 42, 0.12);
+}
+
+/* Animated shimmer border — wrap content in a .shimmer-border container */
+.animate-shimmer-border {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(184, 132, 42, 0.4) 25%,
+      rgba(216, 170, 85, 0.6) 50%,
+      rgba(184, 132, 42, 0.4) 75%,
+      transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer-border 3s ease-in-out infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.animate-shimmer-border:hover::before {
+  opacity: 1;
+}
+
+/* Glowing text */
+.text-glow {
+  text-shadow: 0 0 20px rgba(184, 132, 42, 0.3), 0 0 40px rgba(184, 132, 42, 0.15);
+}
+
+.text-glow-strong {
+  text-shadow: 0 0 15px rgba(184, 132, 42, 0.4), 0 0 30px rgba(184, 132, 42, 0.2), 0 0 60px rgba(184, 132, 42, 0.1);
+}
+
+/* Ambient mesh background — floating gradient blobs */
+.ambient-mesh {
+  position: relative;
+}
+
+.ambient-mesh::before,
+.ambient-mesh::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(80px);
+}
+
+.ambient-mesh::before {
+  width: 500px;
+  height: 500px;
+  top: -5%;
+  left: -5%;
+  background: radial-gradient(circle, rgba(184, 132, 42, 0.06) 0%, transparent 70%);
+  animation: mesh-float 20s ease-in-out infinite;
+}
+
+.ambient-mesh::after {
+  width: 400px;
+  height: 400px;
+  bottom: 10%;
+  right: -5%;
+  background: radial-gradient(circle, rgba(30, 127, 118, 0.05) 0%, transparent 70%);
+  animation: mesh-float 25s ease-in-out infinite reverse;
+}
+
+/* Floating orb decoration */
+.floating-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(40px);
+  animation: orb-drift 12s ease-in-out infinite;
+}
+
+/* Glass progress track */
+.glass-track {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(4px);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 -1px 1px rgba(255, 255, 255, 0.03);
+}
+
+/* Animated fill bar shine */
+.fill-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.fill-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  animation: card-shine 2.5s ease-in-out infinite;
+}
+
+/* Glow tip on progress fill */
+.fill-glow-tip {
+  box-shadow: 4px 0 12px -2px rgba(184, 132, 42, 0.5), 0 0 6px rgba(184, 132, 42, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Card shine sweep (feature cards) ───────────────────── */
+.feature-card-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(105deg, transparent 20%, rgba(200, 149, 46, 0.10) 50%, transparent 80%);
+  pointer-events: none;
+}
+
+.feature-card-shine:hover::before {
+  animation: card-shine 0.7s ease forwards;
+}
+
+/* ─── Dark glass panels (marketing / ink sections) ───────── */
+.glass-panel {
+  background: linear-gradient(180deg, rgba(23, 28, 38, 0.7), rgba(13, 17, 23, 0.7));
+  border: 1px solid var(--ink-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.03) inset, 0 12px 30px -12px rgba(0, 0, 0, 0.6);
+  border-radius: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #F4EFE4;
+}
+
+.glass-panel:hover {
+  border-color: rgba(200, 149, 46, 0.45);
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.04) inset, 0 20px 45px -14px rgba(0, 0, 0, 0.7), 0 0 26px -6px rgba(200, 149, 46, 0.25);
+  transform: translateY(-3px);
+}
+
+.glass-card-accent {
+  background: linear-gradient(180deg, rgba(23, 28, 38, 0.65), rgba(13, 17, 23, 0.65));
+  border: 1px solid var(--ink-border);
+  border-radius: 1.25rem;
+  backdrop-filter: blur(14px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card-accent:hover {
+  border-color: rgba(200, 149, 46, 0.5);
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.65), 0 0 20px -4px rgba(200, 149, 46, 0.2);
+  transform: translateY(-3px);
+}
+
+/* Ink navbar */
+.glass-nav {
+  background: rgba(9, 12, 18, 0.85);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border-bottom: 1px solid var(--ink-border);
+}
+
+/* Gold seal pill */
+.glass-pill {
+  background: rgba(200, 149, 46, 0.12);
+  border: 1px solid rgba(200, 149, 46, 0.4);
+  color: #E9C888;
+}
+
+/* ─── Gradient text ───────────────────────────────────────── */
+.gradient-text-amber,
+.gradient-text-gold {
+  background: linear-gradient(120deg, #E9C888 0%, #C8952E 55%, #8A6420 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-teal {
+  background: linear-gradient(120deg, #6FC7BE 0%, #1E7F76 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Glow shadows ────────────────────────────────────────── */
+.shadow-glow {
+  box-shadow: 0 8px 24px -6px rgba(200, 149, 46, 0.45);
+}
+
+.shadow-glow-sm {
+  box-shadow: 0 4px 14px -2px rgba(200, 149, 46, 0.3);
+}
+
+.shadow-glow-blue {
+  box-shadow: 0 4px 14px -2px rgba(30, 127, 118, 0.35);
+}
+
+.shadow-card-hover {
+  box-shadow: 0 18px 40px -18px rgba(20, 16, 8, 0.35);
+}
+
+/* ─── Button shimmer sweep ────────────────────────────────── */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -120%;
+  width: 60%;
+  height: 200%;
+  background: linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.32) 50%, transparent 80%);
+  transform: skewX(-20deg);
+  animation: button-shimmer 3.2s ease-in-out infinite;
+}
+
+/* ─── Stat card top rule ──────────────────────────────────── */
+.stat-card-amber::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #C8952E, transparent);
+  border-radius: 1.25rem 1.25rem 0 0;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* ─── Ambient orbs ────────────────────────────────────────── */
+.amber-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 149, 46, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  animation: float-up 9s ease-in-out infinite;
+}
+
+/* ─── Signature element: Verified Readiness Seal ─────────────
+   A conic-gradient ring used wherever a score/percentage needs
+   to read as a certification mark rather than a chart. Set the
+   custom property --pct (0–100) inline: style={{ '--pct': 82 }}
+   ─────────────────────────────────────────────────────────── */
+.seal-ring {
+  --pct: 0;
+  --seal-track: rgba(200, 149, 46, 0.15);
+  --seal-fill: #C8952E;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(var(--seal-fill) calc(var(--pct) * 1%), var(--seal-track) 0);
+}
+
+.seal-ring::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: var(--seal-ring-bg, #0D1117);
+}
+
+.seal-ring>* {
+  position: relative;
+  z-index: 1;
+}
+
+.seal-ring.seal-ring-light::before {
+  background: var(--seal-ring-bg, #FFFFFF);
+}
+
+/* Diamond corner tick — used on numbered pipeline steps */
+.corner-tick {
+  position: relative;
+}
+
+.corner-tick::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 14px;
+  height: 14px;
+  border-top: 2px solid #C8952E;
+  border-right: 2px solid #C8952E;
+  border-top-right-radius: 0.75rem;
+  opacity: 0.7;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────── */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #CBBFA0 transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #CBBFA0;
+  border-radius: 99px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: #A6976F;
+}
+
+::selection {
+  background: rgba(200, 149, 46, 0.35);
+  color: #1A1712;
+}
