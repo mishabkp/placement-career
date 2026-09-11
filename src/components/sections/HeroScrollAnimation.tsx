@@ -222,6 +222,16 @@ export function HeroScrollAnimation() {
           style={{ imageRendering: 'auto' }}
         />
 
+        {/* Watermark cover — blends with page bg at bottom-right corner */}
+        <div
+          className="absolute bottom-0 right-0 pointer-events-none z-10"
+          style={{
+            width: '220px',
+            height: '60px',
+            background: 'linear-gradient(to top left, #FFF9E9 30%, transparent 100%)',
+          }}
+        />
+
         {/* Loading bar */}
         {loadPct < 100 && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-1.5">
