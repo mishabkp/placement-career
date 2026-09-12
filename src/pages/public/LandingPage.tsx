@@ -129,10 +129,16 @@ export default function LandingPage() {
       {/* ══════════════ 3. INTERACTIVE GLASSMORPHISM PLACEMENT Q&A CHECK ══════════════ */}
       <PlacementQuickCheck />
 
-      {/* ══════════════ 4. CARTOON BENTO 4 PILLARS ══════════════ */}
-      <section className="py-16 px-4 sm:px-8 lg:px-12 xl:px-16 max-w-[1600px] mx-auto w-full">
+      {/* ══════════════ 4. GLASSMORPHIC THEMED 4 PILLARS ══════════════ */}
+      <section className="relative py-20 px-4 sm:px-8 lg:px-12 xl:px-16 max-w-[1600px] mx-auto w-full">
+        {/* Ambient Soft Mesh Gradient Orbs (enhances real glassmorphic refraction) */}
+        <div className="absolute top-1/4 left-10 w-80 h-80 bg-[#FFE600]/15 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-[#00F5D4]/15 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-[#9B5DE5]/15 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute bottom-1/3 right-10 w-80 h-80 bg-[#FF6B6B]/15 rounded-full blur-3xl pointer-events-none -z-10" />
+
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <span className="px-4 py-1.5 rounded-full bg-[#FAF3DF] text-[#6A5F00] font-black text-xs border border-[#CDC7AA]/40 inline-block mb-3">
+          <span className="px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-md text-[#6A5F00] font-black text-xs border border-[#CDC7AA]/50 shadow-xs inline-block mb-3">
             THE 4-PILLAR INTELLIGENCE ENGINE
           </span>
           <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-[#1E1C10] tracking-tight">
@@ -145,100 +151,156 @@ export default function LandingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Card 1: Resume AI */}
-          <div className="bg-white p-6 sm:p-7 rounded-3xl border-2 border-[#CDC7AA]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group hover:-translate-y-1">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#FFE600] flex items-center justify-center text-[#1A1A1A] mb-4 shadow-sm group-hover:scale-110 transition-transform">
+          <Link
+            to="/resume"
+            className="group relative rounded-3xl overflow-hidden border border-white/60 bg-[#1E1C10] shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between h-[450px]"
+          >
+            <img
+              src="/images/feature_ats.jpg"
+              alt="ATS Resume AI"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/40 group-hover:from-black/75 transition-colors duration-500" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent" />
+
+            {/* Top Floating Glass Badges */}
+            <div className="relative z-10 p-5 flex items-center justify-between">
+              <div className="w-12 h-12 rounded-2xl bg-white/85 backdrop-blur-md flex items-center justify-center text-[#1A1A1A] shadow-md border border-white/60 group-hover:scale-110 group-hover:bg-[#FFE600] transition-all">
                 <FileText className="h-6 w-6 text-[#1A1A1A]" />
               </div>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#6A5F00] bg-[#FAF3DF] px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#1A1A1A] bg-white/85 backdrop-blur-md px-3 py-1 rounded-full border border-white/60 shadow-xs">
                 01 · Resume AI
               </span>
-              <h3 className="font-heading text-xl font-black text-[#1E1C10] mt-2 mb-1.5">
+            </div>
+
+            {/* Bottom Frosted Glass Card Panel */}
+            <div className="relative z-10 m-3 p-5 rounded-2xl bg-white/85 backdrop-blur-xl border border-white/70 shadow-lg group-hover:bg-white/95 transition-all duration-300">
+              <h3 className="font-heading text-lg sm:text-xl font-black text-[#1E1C10] leading-snug">
                 ATS Scanner & Auditor
               </h3>
-              <p className="text-xs text-[#4B4731] leading-relaxed font-medium">
+              <p className="text-xs text-[#4B4731] leading-relaxed font-medium mt-1.5">
                 Scans your PDF resume against Tier-1 SDE job descriptions. Auto-suggests quantified bullet metrics that bypass recruiter filters.
               </p>
-            </div>
-            <div className="pt-5 mt-4 border-t border-[#CDC7AA]/20">
-              <Link to="/resume" className="text-xs font-bold text-[#6A5F00] flex items-center gap-1 hover:underline">
+              <div className="pt-3.5 mt-3.5 border-t border-[#CDC7AA]/40 flex items-center justify-between text-xs font-black text-[#6A5F00]">
                 <span>Test Resume Scanner</span>
-                <ChevronRight className="h-3.5 w-3.5" />
-              </Link>
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </div>
             </div>
-          </div>
+          </Link>
 
           {/* Card 2: AI Mock Interview */}
-          <div className="bg-white p-6 sm:p-7 rounded-3xl border-2 border-[#CDC7AA]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group hover:-translate-y-1">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#00F5D4] flex items-center justify-center text-[#006B5B] mb-4 shadow-sm group-hover:scale-110 transition-transform">
+          <Link
+            to="/interview"
+            className="group relative rounded-3xl overflow-hidden border border-white/60 bg-[#1E1C10] shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between h-[450px]"
+          >
+            <img
+              src="/images/feature_mock.jpg"
+              alt="AI Voice & Tech Mocks"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/40 group-hover:from-black/75 transition-colors duration-500" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent" />
+
+            {/* Top Floating Glass Badges */}
+            <div className="relative z-10 p-5 flex items-center justify-between">
+              <div className="w-12 h-12 rounded-2xl bg-white/85 backdrop-blur-md flex items-center justify-center text-[#006B5B] shadow-md border border-white/60 group-hover:scale-110 group-hover:bg-[#00F5D4] transition-all">
                 <Mic className="h-6 w-6 text-[#006B5B]" />
               </div>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#006B5B] bg-[#00F5D4]/20 px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#006B5B] bg-white/85 backdrop-blur-md px-3 py-1 rounded-full border border-white/60 shadow-xs">
                 02 · Simulator
               </span>
-              <h3 className="font-heading text-xl font-black text-[#1E1C10] mt-2 mb-1.5">
+            </div>
+
+            {/* Bottom Frosted Glass Card Panel */}
+            <div className="relative z-10 m-3 p-5 rounded-2xl bg-white/85 backdrop-blur-xl border border-white/70 shadow-lg group-hover:bg-white/95 transition-all duration-300">
+              <h3 className="font-heading text-lg sm:text-xl font-black text-[#1E1C10] leading-snug">
                 AI Voice & Tech Mocks
               </h3>
-              <p className="text-xs text-[#4B4731] leading-relaxed font-medium">
+              <p className="text-xs text-[#4B4731] leading-relaxed font-medium mt-1.5">
                 Practice technical DSA explanation, system design trade-offs, and HR STAR method scenarios with live real-time AI speech feedback.
               </p>
-            </div>
-            <div className="pt-5 mt-4 border-t border-[#CDC7AA]/20">
-              <Link to="/interview" className="text-xs font-bold text-[#006B5B] flex items-center gap-1 hover:underline">
+              <div className="pt-3.5 mt-3.5 border-t border-[#CDC7AA]/40 flex items-center justify-between text-xs font-black text-[#006B5B]">
                 <span>Start Mock Session</span>
-                <ChevronRight className="h-3.5 w-3.5" />
-              </Link>
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </div>
             </div>
-          </div>
+          </Link>
 
           {/* Card 3: Skill Gap Radar */}
-          <div className="bg-white p-6 sm:p-7 rounded-3xl border-2 border-[#CDC7AA]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group hover:-translate-y-1">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#9B5DE5] flex items-center justify-center text-white mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                <Target className="h-6 w-6 text-white" />
+          <Link
+            to="/skill-gap"
+            className="group relative rounded-3xl overflow-hidden border border-white/60 bg-[#1E1C10] shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between h-[450px]"
+          >
+            <img
+              src="/images/feature_skill.jpg"
+              alt="Role Benchmark Radar"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/40 group-hover:from-black/75 transition-colors duration-500" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent" />
+
+            {/* Top Floating Glass Badges */}
+            <div className="relative z-10 p-5 flex items-center justify-between">
+              <div className="w-12 h-12 rounded-2xl bg-white/85 backdrop-blur-md flex items-center justify-center text-[#7C3AED] shadow-md border border-white/60 group-hover:scale-110 group-hover:bg-[#9B5DE5] group-hover:text-white transition-all">
+                <Target className="h-6 w-6" />
               </div>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#9B5DE5] bg-[#9B5DE5]/20 px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#7C3AED] bg-white/85 backdrop-blur-md px-3 py-1 rounded-full border border-white/60 shadow-xs">
                 03 · Gap Analysis
               </span>
-              <h3 className="font-heading text-xl font-black text-[#1E1C10] mt-2 mb-1.5">
+            </div>
+
+            {/* Bottom Frosted Glass Card Panel */}
+            <div className="relative z-10 m-3 p-5 rounded-2xl bg-white/85 backdrop-blur-xl border border-white/70 shadow-lg group-hover:bg-white/95 transition-all duration-300">
+              <h3 className="font-heading text-lg sm:text-xl font-black text-[#1E1C10] leading-snug">
                 Role Benchmark Radar
               </h3>
-              <p className="text-xs text-[#4B4731] leading-relaxed font-medium">
+              <p className="text-xs text-[#4B4731] leading-relaxed font-medium mt-1.5">
                 Compare your current skills side-by-side against campus criteria for companies like Google, PhonePe, and Atlassian to see missing gaps.
               </p>
-            </div>
-            <div className="pt-5 mt-4 border-t border-[#CDC7AA]/20">
-              <Link to="/skill-gap" className="text-xs font-bold text-[#9B5DE5] flex items-center gap-1 hover:underline">
+              <div className="pt-3.5 mt-3.5 border-t border-[#CDC7AA]/40 flex items-center justify-between text-xs font-black text-[#7C3AED]">
                 <span>Analyze Skill Gaps</span>
-                <ChevronRight className="h-3.5 w-3.5" />
-              </Link>
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </div>
             </div>
-          </div>
+          </Link>
 
           {/* Card 4: Coding Coach */}
-          <div className="bg-white p-6 sm:p-7 rounded-3xl border-2 border-[#CDC7AA]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group hover:-translate-y-1">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#FF6B6B] flex items-center justify-center text-white mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                <Code2 className="h-6 w-6 text-white" />
+          <Link
+            to="/coding"
+            className="group relative rounded-3xl overflow-hidden border border-white/60 bg-[#1E1C10] shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between h-[450px]"
+          >
+            <img
+              src="/images/feature_coding.jpg"
+              alt="Campus Question Bank"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/40 group-hover:from-black/75 transition-colors duration-500" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent" />
+
+            {/* Top Floating Glass Badges */}
+            <div className="relative z-10 p-5 flex items-center justify-between">
+              <div className="w-12 h-12 rounded-2xl bg-white/85 backdrop-blur-md flex items-center justify-center text-[#DC2626] shadow-md border border-white/60 group-hover:scale-110 group-hover:bg-[#FF6B6B] group-hover:text-white transition-all">
+                <Code2 className="h-6 w-6" />
               </div>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#BA1A1A] bg-[#FFDAD6] px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#DC2626] bg-white/85 backdrop-blur-md px-3 py-1 rounded-full border border-white/60 shadow-xs">
                 04 · DSA Coach
               </span>
-              <h3 className="font-heading text-xl font-black text-[#1E1C10] mt-2 mb-1.5">
+            </div>
+
+            {/* Bottom Frosted Glass Card Panel */}
+            <div className="relative z-10 m-3 p-5 rounded-2xl bg-white/85 backdrop-blur-xl border border-white/70 shadow-lg group-hover:bg-white/95 transition-all duration-300">
+              <h3 className="font-heading text-lg sm:text-xl font-black text-[#1E1C10] leading-snug">
                 Campus Question Bank
               </h3>
-              <p className="text-xs text-[#4B4731] leading-relaxed font-medium">
+              <p className="text-xs text-[#4B4731] leading-relaxed font-medium mt-1.5">
                 480+ verified campus coding problems across DP, Graphs, Trees, and SQL with instant test runners and Pal-Bot hint generation.
               </p>
-            </div>
-            <div className="pt-5 mt-4 border-t border-[#CDC7AA]/20">
-              <Link to="/coding" className="text-xs font-bold text-[#BA1A1A] flex items-center gap-1 hover:underline">
+              <div className="pt-3.5 mt-3.5 border-t border-[#CDC7AA]/40 flex items-center justify-between text-xs font-black text-[#DC2626]">
                 <span>Practice Challenges</span>
-                <ChevronRight className="h-3.5 w-3.5" />
-              </Link>
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
       </section>
 
