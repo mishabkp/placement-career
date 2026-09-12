@@ -121,11 +121,10 @@ export function PlacementQuickCheck() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id as 'q1' | 'q2' | 'q3')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  activeTab === tab.id
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab.id
                     ? 'bg-[#1E1C10] text-white shadow-xs'
                     : 'text-[#4B4731] hover:text-[#1E1C10] hover:bg-white/60'
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -166,18 +165,16 @@ export function PlacementQuickCheck() {
                         key={opt.label}
                         type="button"
                         onClick={() => handleSelect('role', idx)}
-                        className={`p-4 rounded-2xl text-left transition-all border flex flex-col justify-between gap-1 group ${
-                          isSelected
+                        className={`p-4 rounded-2xl text-left transition-all border flex flex-col justify-between gap-1 group ${isSelected
                             ? 'bg-[#1E1C10] text-white border-[#1E1C10] shadow-md scale-[1.02]'
                             : 'bg-white/80 hover:bg-white text-[#1E1C10] border-[#CDC7AA]/50 hover:border-[#1E1C10]/40 shadow-xs'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center justify-between w-full">
                           <span className="font-heading text-sm font-black">{opt.label}</span>
                           <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                              isSelected ? 'border-white bg-[#FFE600]' : 'border-[#CDC7AA]'
-                            }`}
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-white bg-[#FFE600]' : 'border-[#CDC7AA]'
+                              }`}
                           >
                             {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A]" />}
                           </div>
@@ -230,18 +227,16 @@ export function PlacementQuickCheck() {
                         key={opt.label}
                         type="button"
                         onClick={() => handleSelect('dsa', idx)}
-                        className={`p-4 rounded-2xl text-left transition-all border flex flex-col justify-between gap-1 group ${
-                          isSelected
+                        className={`p-4 rounded-2xl text-left transition-all border flex flex-col justify-between gap-1 group ${isSelected
                             ? 'bg-[#1E1C10] text-white border-[#1E1C10] shadow-md scale-[1.02]'
                             : 'bg-white/80 hover:bg-white text-[#1E1C10] border-[#CDC7AA]/50 hover:border-[#1E1C10]/40 shadow-xs'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center justify-between w-full">
                           <span className="font-heading text-sm font-black">{opt.label}</span>
                           <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                              isSelected ? 'border-white bg-[#FFE600]' : 'border-[#CDC7AA]'
-                            }`}
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-white bg-[#FFE600]' : 'border-[#CDC7AA]'
+                              }`}
                           >
                             {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A]" />}
                           </div>
@@ -284,18 +279,16 @@ export function PlacementQuickCheck() {
                         key={opt.label}
                         type="button"
                         onClick={() => handleSelect('ctc', idx)}
-                        className={`p-4 rounded-2xl text-left transition-all border flex flex-col justify-between gap-1 group ${
-                          isSelected
+                        className={`p-4 rounded-2xl text-left transition-all border flex flex-col justify-between gap-1 group ${isSelected
                             ? 'bg-[#1E1C10] text-white border-[#1E1C10] shadow-md scale-[1.02]'
                             : 'bg-white/80 hover:bg-white text-[#1E1C10] border-[#CDC7AA]/50 hover:border-[#1E1C10]/40 shadow-xs'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center justify-between w-full">
                           <span className="font-heading text-sm font-black">{opt.label}</span>
                           <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                              isSelected ? 'border-white bg-[#FFE600]' : 'border-[#CDC7AA]'
-                            }`}
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-white bg-[#FFE600]' : 'border-[#CDC7AA]'
+                              }`}
                           >
                             {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A]" />}
                           </div>

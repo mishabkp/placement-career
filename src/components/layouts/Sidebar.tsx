@@ -155,10 +155,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Sidebar panel */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-40 h-full flex flex-col',
+          'fixed top-0 left-0 z-40 h-full lg:h-auto flex flex-col',
           'transition-all duration-300 ease-in-out',
           'lg:translate-x-0 lg:static lg:z-auto',
-          'bg-[#FAF3DF] border-r border-[#CDC7AA]/40 text-[#1E1C10]',
+          'bg-white/80 backdrop-blur-xl border border-[#CDC7AA]/40 text-[#1E1C10] shadow-xl',
+          'rounded-none lg:rounded-3xl',
           isOpen ? 'translate-x-0' : '-translate-x-full',
           collapsed ? 'w-[70px]' : 'w-[264px]',
         )}

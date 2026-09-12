@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   mockUser,
   mockCareerScore,
@@ -104,15 +105,24 @@ export default function DashboardPage() {
   const [quizDone, setQuizDone] = useState<boolean>(() => {
     return localStorage.getItem(QUIZ_DONE_KEY) === 'true';
   });
+  const [isLoading, setIsLoading] = useState(true);
   const dashboardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (quizDone && dashboardRef.current) {
+    // Simulate data loading for skeleton
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (quizDone && dashboardRef.current && !isLoading) {
       setTimeout(() => {
         dashboardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 300);
     }
-  }, [quizDone]);
+  }, [quizDone, isLoading]);
 
   const handleQuizComplete = (_answers: Record<string, string>) => {
     localStorage.setItem(QUIZ_DONE_KEY, 'true');
@@ -138,14 +148,41 @@ export default function DashboardPage() {
       )}
 
       {/* ─── Main Dashboard Container ─── */}
-      <div
+      <motion.div
         ref={dashboardRef}
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+          }
+        }}
         className={`space-y-8 transition-all duration-700 ${
           !quizDone ? 'opacity-30 pointer-events-none select-none blur-[1px]' : 'opacity-100 pointer-events-auto blur-0'
         }`}
       >
-        {/* ─── 1. TOP COMMAND CENTER / HERO BANNER (Stitch Vibrant Yellow) ─── */}
-        <section className="relative w-full rounded-3xl bg-gradient-to-r from-[#FFE600] via-[#FAF3DF] to-[#F4EEDA] p-6 sm:p-8 lg:p-10 overflow-hidden shadow-lg border-2 border-[#E7D2A0]">
+        {isLoading ? (
+          <div className="space-y-8">
+            <div className="w-full h-48 rounded-3xl bg-slate-200 animate-pulse" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-36 rounded-2xl bg-slate-200 animate-pulse" />
+              ))}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-7 h-96 rounded-3xl bg-slate-200 animate-pulse" />
+              <div className="lg:col-span-5 h-96 rounded-3xl bg-slate-200 animate-pulse" />
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* ─── 1. TOP COMMAND CENTER / HERO BANNER (Stitch Vibrant Yellow) ─── */}
+            <motion.section 
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+              className="relative w-full rounded-3xl bg-gradient-to-r from-[#FFE600] via-[#FAF3DF] to-[#F4EEDA] p-6 sm:p-8 lg:p-10 overflow-hidden shadow-lg border-2 border-[#E7D2A0]"
+            >
           {/* Ambient Blurred Auras */}
           <div className="absolute -right-8 -bottom-10 w-64 h-64 bg-[#00F5D4]/20 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -top-12 right-48 w-44 h-44 bg-[#9B5DE5]/15 rounded-full blur-xl pointer-events-none" />
@@ -203,10 +240,13 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* ─── 2. QUICK-LAUNCH MODULES GRID (5 Cards) ─── */}
-        <section className="space-y-3">
+        <motion.section 
+          variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+          className="space-y-3"
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-[#6A5F00]" />
@@ -331,10 +371,13 @@ export default function DashboardPage() {
               </div>
             </Link>
           </div>
-        </section>
+        </motion.section>
 
         {/* ─── 3. TWO-COLUMN ANALYTICS & ACTIVITY SECTION (7 cols + 5 cols) ─── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <motion.div 
+          variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+          className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+        >
           {/* LEFT COLUMN: Career Readiness, Match Benchmarks & Priority Action (7 cols) */}
           <div className="lg:col-span-7 flex flex-col gap-6">
             {/* Readiness Ring & Benchmark Overview Card */}
@@ -698,8 +741,10 @@ export default function DashboardPage() {
               </Link>
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+          </>
+        )}
+      </motion.div>
     </div>
   );
 }

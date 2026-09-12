@@ -12,7 +12,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   return (
     <header
-      className="h-[68px] flex items-center justify-between px-4 lg:px-8 flex-shrink-0 sticky top-0 z-20 bg-[#FFF9E9]/90 backdrop-blur-xl border-b border-[#CDC7AA]/40 shadow-sm"
+      className="h-[68px] flex items-center justify-between px-4 lg:px-6 flex-shrink-0 sticky top-0 z-20 bg-white/60 backdrop-blur-xl border border-[#CDC7AA]/40 shadow-sm rounded-3xl"
     >
       {/* Left: Mobile Toggle & Stitch Search bar */}
       <div className="flex items-center gap-3">
@@ -31,7 +31,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           <Search className="h-4 w-4 text-[#7C775F] flex-shrink-0" />
           <input
             type="text"
-            placeholder="Search paths, skills, mock tests..."
+            placeholder="Search paths, skills... (⌘K)"
             className="bg-transparent text-xs text-[#1E1C10] placeholder:text-[#7C775F] font-medium focus:outline-none w-full"
           />
         </div>
