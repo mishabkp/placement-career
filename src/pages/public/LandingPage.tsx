@@ -129,7 +129,7 @@ export default function LandingPage() {
       {/* ══════════════ 3. INTERACTIVE GLASSMORPHISM PLACEMENT Q&A CHECK ══════════════ */}
       <PlacementQuickCheck />
 
-      {/* ══════════════ 4. IMAGE CARD 4 PILLARS ══════════════ */}
+      {/* ══════════════ 4. CARTOON BENTO 4 PILLARS ══════════════ */}
       <section className="py-16 px-4 sm:px-8 lg:px-12 xl:px-16 max-w-[1600px] mx-auto w-full">
         <div className="text-center max-w-3xl mx-auto mb-14">
           <span className="px-4 py-1.5 rounded-full bg-[#FAF3DF] text-[#6A5F00] font-black text-xs border border-[#CDC7AA]/40 inline-block mb-3">
@@ -138,76 +138,107 @@ export default function LandingPage() {
           <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-[#1E1C10] tracking-tight">
             Everything You Need to Get Placed
           </h2>
+          <p className="text-sm sm:text-base text-[#4B4731] font-medium mt-2">
+            No fragmented tools. Placement Pal combines resume vetting, live mock tests, coding streaks, and campus recruiter alignments in one joyful dashboard.
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Card 1: Resume AI */}
-          <Link to="/resume" className="relative group rounded-3xl overflow-hidden cursor-pointer block" style={{ height: '420px' }}>
-            <img src="/images/feature_ats.jpg" alt="ATS Resume AI" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
-            <div className="absolute inset-x-0 bottom-0 p-5">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FFE600]">01 · Resume AI</span>
-              <h3 className="font-heading text-lg sm:text-xl font-black text-white mt-1 leading-tight">ATS Scanner &amp; Auditor</h3>
-              <div className="overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500 ease-out">
-                <p className="text-xs text-white/80 leading-relaxed mt-2 font-medium">Scans your PDF resume against Tier-1 SDE job descriptions. Auto-suggests quantified bullet metrics that bypass recruiter filters.</p>
-                <div className="mt-3 flex items-center gap-1.5 text-[#FFE600] text-xs font-black">
-                  <span>Test Resume Scanner</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </div>
+          <div className="bg-white p-6 sm:p-7 rounded-3xl border-2 border-[#CDC7AA]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group hover:-translate-y-1">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-[#FFE600] flex items-center justify-center text-[#1A1A1A] mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                <FileText className="h-6 w-6 text-[#1A1A1A]" />
               </div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#6A5F00] bg-[#FAF3DF] px-2.5 py-0.5 rounded-full">
+                01 · Resume AI
+              </span>
+              <h3 className="font-heading text-xl font-black text-[#1E1C10] mt-2 mb-1.5">
+                ATS Scanner & Auditor
+              </h3>
+              <p className="text-xs text-[#4B4731] leading-relaxed font-medium">
+                Scans your PDF resume against Tier-1 SDE job descriptions. Auto-suggests quantified bullet metrics that bypass recruiter filters.
+              </p>
             </div>
-          </Link>
+            <div className="pt-5 mt-4 border-t border-[#CDC7AA]/20">
+              <Link to="/resume" className="text-xs font-bold text-[#6A5F00] flex items-center gap-1 hover:underline">
+                <span>Test Resume Scanner</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
 
           {/* Card 2: AI Mock Interview */}
-          <Link to="/interview" className="relative group rounded-3xl overflow-hidden cursor-pointer block" style={{ height: '420px' }}>
-            <img src="/images/feature_mock.jpg" alt="AI Mock Interview" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
-            <div className="absolute inset-x-0 bottom-0 p-5">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#00F5D4]">02 · Simulator</span>
-              <h3 className="font-heading text-lg sm:text-xl font-black text-white mt-1 leading-tight">AI Voice &amp; Tech Mocks</h3>
-              <div className="overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500 ease-out">
-                <p className="text-xs text-white/80 leading-relaxed mt-2 font-medium">Practice technical DSA explanation, system design trade-offs, and HR STAR method scenarios with live real-time AI speech feedback.</p>
-                <div className="mt-3 flex items-center gap-1.5 text-[#00F5D4] text-xs font-black">
-                  <span>Start Mock Session</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </div>
+          <div className="bg-white p-6 sm:p-7 rounded-3xl border-2 border-[#CDC7AA]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group hover:-translate-y-1">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-[#00F5D4] flex items-center justify-center text-[#006B5B] mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                <Mic className="h-6 w-6 text-[#006B5B]" />
               </div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#006B5B] bg-[#00F5D4]/20 px-2.5 py-0.5 rounded-full">
+                02 · Simulator
+              </span>
+              <h3 className="font-heading text-xl font-black text-[#1E1C10] mt-2 mb-1.5">
+                AI Voice & Tech Mocks
+              </h3>
+              <p className="text-xs text-[#4B4731] leading-relaxed font-medium">
+                Practice technical DSA explanation, system design trade-offs, and HR STAR method scenarios with live real-time AI speech feedback.
+              </p>
             </div>
-          </Link>
+            <div className="pt-5 mt-4 border-t border-[#CDC7AA]/20">
+              <Link to="/interview" className="text-xs font-bold text-[#006B5B] flex items-center gap-1 hover:underline">
+                <span>Start Mock Session</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
 
           {/* Card 3: Skill Gap Radar */}
-          <Link to="/skill-gap" className="relative group rounded-3xl overflow-hidden cursor-pointer block" style={{ height: '420px' }}>
-            <img src="/images/feature_skill.jpg" alt="Skill Gap Radar" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
-            <div className="absolute inset-x-0 bottom-0 p-5">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#C084FC]">03 · Gap Analysis</span>
-              <h3 className="font-heading text-lg sm:text-xl font-black text-white mt-1 leading-tight">Role Benchmark Radar</h3>
-              <div className="overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500 ease-out">
-                <p className="text-xs text-white/80 leading-relaxed mt-2 font-medium">Compare your current skills side-by-side against campus criteria for companies like Google, PhonePe, and Atlassian to see missing gaps.</p>
-                <div className="mt-3 flex items-center gap-1.5 text-[#C084FC] text-xs font-black">
-                  <span>Analyze Skill Gaps</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </div>
+          <div className="bg-white p-6 sm:p-7 rounded-3xl border-2 border-[#CDC7AA]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group hover:-translate-y-1">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-[#9B5DE5] flex items-center justify-center text-white mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                <Target className="h-6 w-6 text-white" />
               </div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#9B5DE5] bg-[#9B5DE5]/20 px-2.5 py-0.5 rounded-full">
+                03 · Gap Analysis
+              </span>
+              <h3 className="font-heading text-xl font-black text-[#1E1C10] mt-2 mb-1.5">
+                Role Benchmark Radar
+              </h3>
+              <p className="text-xs text-[#4B4731] leading-relaxed font-medium">
+                Compare your current skills side-by-side against campus criteria for companies like Google, PhonePe, and Atlassian to see missing gaps.
+              </p>
             </div>
-          </Link>
+            <div className="pt-5 mt-4 border-t border-[#CDC7AA]/20">
+              <Link to="/skill-gap" className="text-xs font-bold text-[#9B5DE5] flex items-center gap-1 hover:underline">
+                <span>Analyze Skill Gaps</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
 
           {/* Card 4: Coding Coach */}
-          <Link to="/coding" className="relative group rounded-3xl overflow-hidden cursor-pointer block" style={{ height: '420px' }}>
-            <img src="/images/feature_coding.jpg" alt="Campus Coding Bank" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
-            <div className="absolute inset-x-0 bottom-0 p-5">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FF6B6B]">04 · DSA Coach</span>
-              <h3 className="font-heading text-lg sm:text-xl font-black text-white mt-1 leading-tight">Campus Question Bank</h3>
-              <div className="overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500 ease-out">
-                <p className="text-xs text-white/80 leading-relaxed mt-2 font-medium">480+ verified campus coding problems across DP, Graphs, Trees, and SQL with instant test runners and Pal-Bot hint generation.</p>
-                <div className="mt-3 flex items-center gap-1.5 text-[#FF6B6B] text-xs font-black">
-                  <span>Practice Challenges</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </div>
+          <div className="bg-white p-6 sm:p-7 rounded-3xl border-2 border-[#CDC7AA]/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group hover:-translate-y-1">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-[#FF6B6B] flex items-center justify-center text-white mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                <Code2 className="h-6 w-6 text-white" />
               </div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#BA1A1A] bg-[#FFDAD6] px-2.5 py-0.5 rounded-full">
+                04 · DSA Coach
+              </span>
+              <h3 className="font-heading text-xl font-black text-[#1E1C10] mt-2 mb-1.5">
+                Campus Question Bank
+              </h3>
+              <p className="text-xs text-[#4B4731] leading-relaxed font-medium">
+                480+ verified campus coding problems across DP, Graphs, Trees, and SQL with instant test runners and Pal-Bot hint generation.
+              </p>
             </div>
-          </Link>
+            <div className="pt-5 mt-4 border-t border-[#CDC7AA]/20">
+              <Link to="/coding" className="text-xs font-bold text-[#BA1A1A] flex items-center gap-1 hover:underline">
+                <span>Practice Challenges</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
