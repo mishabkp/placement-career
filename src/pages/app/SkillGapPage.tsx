@@ -1,322 +1,658 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/shared/PageHeader';
-import {
-  TrendingUp,
-  Psychology,
-  CodeIcon,
-  Dns,
-  Web,
-  Storage,
-  SmartToy,
-  ArrowRight,
-} from '../../components/icons/StitchIcons';
-import { Button } from '../../components/ui/Button';
+import { TrendingUp } from '../../components/icons/StitchIcons';
 import { Badge } from '../../components/ui/Badge';
 import {
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
-import { mockSkillRadarData } from '../../data/mockData';
+  Code2, Server, Cloud, BrainCircuit,
+  CheckCircle2, RotateCcw, ChevronRight, Flame, Star,
+  Target, BookOpen, AlertTriangle, TrendingDown,
+} from 'lucide-react';
 
-export default function SkillGapPage() {
-  const [activeNotification, setActiveNotification] = useState<string | null>(null);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatInput, setChatInput] = useState('');
-  const [chatMessages, setChatMessages] = useState<string[]>([
-    "Beep boop! 🤖 I'm Pal-Bot. Your React & DSA skills are in great shape! Ask me anything about System Design or Node.js to close your remaining 22% gap."
-  ]);
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-  const showToast = (msg: string) => {
-    setActiveNotification(msg);
-    setTimeout(() => setActiveNotification(null), 3000);
-  };
+interface Skill {
+  id: string;
+  name: string;
+  category: string;
+  benchmark: number; // industry expected %
+}
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
-    const userMsg = chatInput;
-    setChatMessages((prev) => [
-      ...prev,
-      `You: ${userMsg}`,
-      `Pal-Bot: Great question about "${userMsg}"! Focus on master-slave replication and write-through caching to pass Tier-1 interviews.`
-    ]);
-    setChatInput('');
-  };
+interface Track {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  color: string;          // pill / accent color
+  bgColor: string;
+  skills: Skill[];
+}
+
+interface SkillRatings {
+  [skillId: string]: number; // 0-4 index → 0=None, 1=Beginner, 2=Familiar, 3=Proficient, 4=Expert
+}
+
+const LEVELS = ['None', 'Beginner', 'Familiar', 'Proficient', 'Expert'];
+const LEVEL_PCT = [0, 25, 50, 75, 100]; // each level maps to a % value
+
+// ─── Track Definitions ───────────────────────────────────────────────────────
+
+const TRACKS: Track[] = [
+  {
+    id: 'sde',
+    label: 'Software Dev (SDE)',
+    icon: <Code2 className="h-6 w-6" />,
+    color: '#6A5F00',
+    bgColor: '#FFE600',
+    skills: [
+      { id: 'dsa',        name: 'Data Structures & Algorithms', category: 'Core CS',      benchmark: 80 },
+      { id: 'oop',        name: 'OOP & Design Patterns',        category: 'Core CS',      benchmark: 70 },
+      { id: 'react',      name: 'React / Frontend',             category: 'Frontend',     benchmark: 75 },
+      { id: 'nodejs',     name: 'Node.js / Backend',            category: 'Backend',      benchmark: 70 },
+      { id: 'sql',        name: 'SQL & Databases',              category: 'Database',     benchmark: 65 },
+      { id: 'sysdesign',  name: 'System Design',               category: 'Architecture', benchmark: 60 },
+      { id: 'git',        name: 'Git & Version Control',        category: 'Tools',        benchmark: 75 },
+      { id: 'docker',     name: 'Docker / DevOps Basics',       category: 'DevOps',       benchmark: 50 },
+    ],
+  },
+  {
+    id: 'data',
+    label: 'Data Science / ML',
+    icon: <BrainCircuit className="h-6 w-6" />,
+    color: '#006B5B',
+    bgColor: '#E6F4F1',
+    skills: [
+      { id: 'python',     name: 'Python Programming',           category: 'Core',         benchmark: 85 },
+      { id: 'stats',      name: 'Statistics & Probability',     category: 'Math',         benchmark: 75 },
+      { id: 'pandas',     name: 'Pandas & Data Wrangling',      category: 'Libraries',    benchmark: 80 },
+      { id: 'ml',         name: 'ML Algorithms',                category: 'ML',           benchmark: 75 },
+      { id: 'sklearn',    name: 'Scikit-learn / PyTorch',       category: 'Libraries',    benchmark: 70 },
+      { id: 'sql2',       name: 'SQL for Analytics',            category: 'Database',     benchmark: 65 },
+      { id: 'viz',        name: 'Data Visualization',           category: 'Reporting',    benchmark: 60 },
+    ],
+  },
+  {
+    id: 'devops',
+    label: 'DevOps / Cloud',
+    icon: <Cloud className="h-6 w-6" />,
+    color: '#004D88',
+    bgColor: '#E8F0FE',
+    skills: [
+      { id: 'linux',      name: 'Linux & Shell Scripting',      category: 'OS',           benchmark: 80 },
+      { id: 'docker2',    name: 'Docker & Containers',          category: 'Container',    benchmark: 85 },
+      { id: 'k8s',        name: 'Kubernetes',                   category: 'Orchestration',benchmark: 70 },
+      { id: 'cicd',       name: 'CI/CD Pipelines',             category: 'Automation',   benchmark: 75 },
+      { id: 'aws',        name: 'AWS / GCP / Azure',            category: 'Cloud',        benchmark: 70 },
+      { id: 'terraform',  name: 'Terraform / IaC',              category: 'IaC',          benchmark: 60 },
+    ],
+  },
+  {
+    id: 'backend',
+    label: 'Backend Engineering',
+    icon: <Server className="h-6 w-6" />,
+    color: '#5B2D8E',
+    bgColor: '#F3EEFF',
+    skills: [
+      { id: 'api',        name: 'REST API Design',              category: 'API',          benchmark: 80 },
+      { id: 'auth',       name: 'Auth & Security',              category: 'Security',     benchmark: 70 },
+      { id: 'dbs',        name: 'SQL + NoSQL Databases',        category: 'Database',     benchmark: 75 },
+      { id: 'cache',      name: 'Caching (Redis)',              category: 'Performance',  benchmark: 60 },
+      { id: 'mq',         name: 'Message Queues (Kafka)',       category: 'Infra',        benchmark: 55 },
+      { id: 'sysdesign2', name: 'System Design & Scalability', category: 'Architecture', benchmark: 65 },
+      { id: 'testing',    name: 'Unit & Integration Testing',  category: 'Quality',      benchmark: 70 },
+    ],
+  },
+];
+
+// ─── Recommendation data keyed by skill id ───────────────────────────────────
+
+const RECOMMENDATIONS: Record<string, string> = {
+  dsa:        'Practice LeetCode Medium problems daily — focus on Trees, Graphs & DP',
+  oop:        'Build a mini project using SOLID principles and common design patterns',
+  react:      'Complete React Hooks deep-dive + build a full CRUD app',
+  nodejs:     'Build a REST API with Express + JWT auth + MongoDB',
+  sql:        'Practice window functions, joins & query optimization on HackerRank',
+  sysdesign:  'Study "Designing Data-Intensive Applications" + watch System Design Primer',
+  git:        'Contribute to an open-source project; practice branching strategies',
+  docker:     'Containerize a Node.js app and push to Docker Hub',
+  python:     'Build end-to-end ML pipeline with Python — data → model → API',
+  stats:      'Complete Khan Academy Statistics + work through prob/stats problems',
+  pandas:     'Work through 30-days of Pandas challenges on LeetCode',
+  ml:         'Implement 5 core ML algorithms from scratch in Python',
+  sklearn:    'Build & evaluate 3 models using Scikit-learn on Kaggle datasets',
+  sql2:       'Practice GROUP BY aggregations and window functions for analytics',
+  viz:        'Create a Tableau or Matplotlib dashboard from a public dataset',
+  linux:      'Complete Linux command line challenge on OverTheWire / TryHackMe',
+  docker2:    'Build a multi-container app with Docker Compose',
+  k8s:        'Deploy an app on minikube; learn pods, deployments & services',
+  cicd:       'Set up a GitHub Actions pipeline with build, test & deploy stages',
+  aws:        'Get AWS Cloud Practitioner certified — free practice exams available',
+  terraform:  'Write Terraform config to provision a VPC + EC2 on AWS',
+  api:        'Design a RESTful API following OpenAPI spec with proper versioning',
+  auth:       'Implement JWT + refresh token flow with role-based access control',
+  dbs:        'Compare PostgreSQL vs MongoDB for different use-cases with hands-on',
+  cache:      'Set up Redis caching layer for a Node.js API endpoint',
+  mq:         'Build a producer-consumer app with Kafka and process 1000 msgs/sec',
+  sysdesign2: 'Design URL Shortener + Rate Limiter from scratch on paper',
+  testing:    'Write unit tests with Jest; achieve 80% coverage on a small project',
+};
+
+const STORAGE_KEY = 'skill_gap_data';
+
+// ─── Helper ──────────────────────────────────────────────────────────────────
+
+function getUserPct(rating: number): number {
+  return LEVEL_PCT[rating] ?? 0;
+}
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function StepIndicator({ step }: { step: 1 | 2 | 3 }) {
+  const steps = [
+    { n: 1, label: 'Choose Track' },
+    { n: 2, label: 'Rate Skills' },
+    { n: 3, label: 'View Gap' },
+  ];
+  return (
+    <div className="flex items-center gap-0 w-full max-w-sm mx-auto mb-8">
+      {steps.map((s, i) => {
+        const done = step > s.n;
+        const active = step === s.n;
+        return (
+          <div key={s.n} className="flex items-center flex-1">
+            <div className="flex flex-col items-center gap-1">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all
+                  ${done ? 'bg-[#6A5F00] text-white' : active ? 'bg-[#FFE600] text-[#6A5F00] ring-2 ring-[#FFE600]/60' : 'bg-[#F4EEDA] text-[#7C775F]'}`}
+              >
+                {done ? <CheckCircle2 className="h-4 w-4" /> : s.n}
+              </div>
+              <span className={`text-[10px] font-bold whitespace-nowrap ${active ? 'text-[#6A5F00]' : 'text-[#7C775F]'}`}>
+                {s.label}
+              </span>
+            </div>
+            {i < steps.length - 1 && (
+              <div className={`flex-1 h-0.5 mx-1 mb-3 ${step > s.n ? 'bg-[#6A5F00]' : 'bg-[#CDC7AA]'}`} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Step 1: Track Selection ─────────────────────────────────────────────────
+
+function TrackSelector({
+  onSelect,
+}: {
+  onSelect: (track: Track) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <div className="text-center">
+        <h2 className="text-2xl font-black text-[#1E1C10] font-heading mb-1">
+          What's your target role?
+        </h2>
+        <p className="text-sm text-[#7C775F]">
+          Pick the track you're preparing for — we'll show the relevant skill gaps.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto w-full">
+        {TRACKS.map((track) => (
+          <button
+            key={track.id}
+            onClick={() => onSelect(track)}
+            className="flex items-center gap-4 p-5 bg-white border-2 border-[#CDC7AA]/40 rounded-2xl
+                       hover:border-[#FFE600] hover:shadow-md hover:-translate-y-0.5 transition-all text-left group cursor-pointer"
+          >
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110"
+              style={{ backgroundColor: track.bgColor, color: track.color }}
+            >
+              {track.icon}
+            </div>
+            <div className="flex-1">
+              <p className="font-black text-[#1E1C10] text-sm">{track.label}</p>
+              <p className="text-[11px] text-[#7C775F] mt-0.5">{track.skills.length} skills assessed</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-[#CDC7AA] group-hover:text-[#6A5F00] group-hover:translate-x-1 transition-all" />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Step 2: Skill Rating ─────────────────────────────────────────────────────
+
+function SkillRater({
+  track,
+  ratings,
+  onRate,
+  onSubmit,
+  onBack,
+}: {
+  track: Track;
+  ratings: SkillRatings;
+  onRate: (skillId: string, level: number) => void;
+  onSubmit: () => void;
+  onBack: () => void;
+}) {
+  const totalSkills = track.skills.length;
+  const rated = track.skills.filter((s) => ratings[s.id] !== undefined).length;
+  const allRated = rated === totalSkills;
+
+  const LEVEL_COLORS = [
+    'bg-[#F0F0F0] text-[#999]',          // None
+    'bg-[#FFE6E6] text-[#C0392B]',        // Beginner
+    'bg-[#FFF3CD] text-[#856404]',        // Familiar
+    'bg-[#D4EDDA] text-[#155724]',        // Proficient
+    'bg-[#FFE600] text-[#6A5F00]',        // Expert
+  ];
 
   return (
-    <div className="space-y-8 pb-16 w-full font-sans">
-      {/* Toast Notification */}
-      {activeNotification && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#1A1A1A] text-[#FFE600] px-5 py-3 rounded-2xl shadow-2xl border border-[#FFE600]/40 flex items-center gap-3 animate-bounce">
-          <SmartToy className="h-5 w-5 text-[#FFE600]" />
-          <span className="text-xs font-bold text-white">{activeNotification}</span>
-        </div>
-      )}
-
-      {/* Page Header */}
-      <PageHeader
-        title="Skill Gap Analyzer"
-        description="Pinpoint missing technical competencies, compare against real-time industry benchmarks, and accelerate your placement readiness."
-        icon={<TrendingUp className="h-6 w-6 text-[#6A5F00]" />}
-        badge={<Badge variant="cyprus">Diagnostic Center</Badge>}
-        actions={
-          <Button
-            variant="primary"
-            onClick={() => showToast('AI Skill Boost initialized! 3 priority modules loaded.')}
-            className="flex items-center gap-2 !bg-[#FFE600] !text-[#1A1A1A] !border-none !rounded-full font-bold shadow-md hover:scale-105"
-          >
-            <Psychology className="h-4 w-4" />
-            AI Skill Boost
-          </Button>
-        }
-      />
-
-      {/* ─── Top Banner / Intro (Exact Stitch Colors) ─── */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 bg-[#FAF3DF] border border-[#CDC7AA]/50 p-6 sm:p-8 rounded-3xl shadow-sm">
-        <div className="flex flex-col gap-2">
-          <span className="text-[10px] font-black text-[#6A5F00] uppercase tracking-wider">
-            Diagnostic Center
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#1E1C10] tracking-tight font-heading">
-            Skill Gap Analysis: SDE-1 Track
-          </h1>
-          <p className="text-xs sm:text-sm text-[#4B4731] max-w-2xl leading-relaxed">
-            Compare your current technical DNA against top-tier Software Engineer requirements. Pinpoint missing competencies and boost them instantly with AI guidance.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="bg-[#FFE600] px-4 py-2.5 rounded-full flex items-center gap-2 shadow-sm">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#726600] animate-pulse" />
-            <span className="text-xs font-black text-[#726600]">Overall Match: 78%</span>
+    <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+      {/* Header */}
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: track.bgColor, color: track.color }}
+            >
+              {track.icon}
+            </div>
+            <h2 className="text-xl font-black text-[#1E1C10] font-heading">{track.label}</h2>
           </div>
-          <button
-            onClick={() => showToast('AI Skill Boost prioritized 2 System Design exercises.')}
-            className="bg-[#FFE600] text-[#1A1A1A] hover:bg-[#FDD835] text-xs font-extrabold px-5 py-2.5 rounded-full shadow-[0_4px_14px_rgba(255,230,0,0.4)] hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
-          >
-            <Psychology className="h-4 w-4" />
-            AI Skill Boost
-          </button>
+          <p className="text-sm text-[#7C775F]">Tap your current level for each skill — be honest!</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-[#7C775F]">{rated}/{totalSkills} rated</span>
+          <div className="w-24 h-2 bg-[#F4EEDA] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#FFE600] rounded-full transition-all duration-500"
+              style={{ width: `${(rated / totalSkills) * 100}%` }}
+            />
+          </div>
         </div>
       </div>
 
-      {/* ─── Main Grid Layout (Stitch Styled) ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Skill Breakdown & Radar representation */}
-        <div className="lg:col-span-7 flex flex-col gap-6">
-          {/* Core Competency Breakdown Card */}
-          <div className="bg-white border border-[#CDC7AA]/40 p-6 sm:p-7 rounded-3xl shadow-sm flex flex-col gap-5">
-            <div className="flex justify-between items-center flex-wrap gap-2">
-              <h2 className="text-xl font-bold text-[#1E1C10] font-heading">Core Competency Breakdown</h2>
-              <span className="text-xs font-semibold text-[#7C775F]">Target: SDE-1 Benchmark</span>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              {/* Skill 1: DSA */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="flex items-center gap-2 text-[#1E1C10]">
-                    <CodeIcon className="h-4 w-4 text-[#6A5F00]" />
-                    Data Structures & Algorithms
-                  </span>
-                  <span className="text-[#6A5F00] font-mono">85% / 90%</span>
-                </div>
-                <div className="w-full bg-[#F4EEDA] h-3.5 rounded-full overflow-hidden p-0.5 shadow-inner">
-                  <div className="bg-[#6A5F00] h-full rounded-full transition-all duration-1000" style={{ width: '85%' }} />
-                </div>
+      {/* Skill cards */}
+      <div className="flex flex-col gap-3">
+        {track.skills.map((skill) => {
+          const currentLevel = ratings[skill.id] ?? undefined;
+          return (
+            <div
+              key={skill.id}
+              className="bg-white border border-[#CDC7AA]/40 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3"
+            >
+              <div className="flex-1">
+                <p className="text-sm font-bold text-[#1E1C10]">{skill.name}</p>
+                <p className="text-[11px] text-[#7C775F]">{skill.category}</p>
               </div>
-
-              {/* Skill 2: System Design */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="flex items-center gap-2 text-[#1E1C10]">
-                    <Dns className="h-4 w-4 text-[#006B5B]" />
-                    System Design & Architecture
-                  </span>
-                  <span className="text-[#006B5B] font-mono">60% / 80%</span>
-                </div>
-                <div className="w-full bg-[#F4EEDA] h-3.5 rounded-full overflow-hidden p-0.5 shadow-inner">
-                  <div className="bg-[#006B5B] h-full rounded-full transition-all duration-1000" style={{ width: '60%' }} />
-                </div>
-              </div>
-
-              {/* Skill 3: React / Frontend */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="flex items-center gap-2 text-[#1E1C10]">
-                    <Web className="h-4 w-4 text-[#9B5DE5]" />
-                    React & Modern Frontend
-                  </span>
-                  <span className="text-[#9B5DE5] font-mono">92% / 85%</span>
-                </div>
-                <div className="w-full bg-[#F4EEDA] h-3.5 rounded-full overflow-hidden p-0.5 shadow-inner">
-                  <div className="bg-[#9B5DE5] h-full rounded-full transition-all duration-1000" style={{ width: '92%' }} />
-                </div>
-              </div>
-
-              {/* Skill 4: Node / Backend */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="flex items-center gap-2 text-[#1E1C10]">
-                    <Storage className="h-4 w-4 text-[#006A6A]" />
-                    Node.js & Databases
-                  </span>
-                  <span className="text-[#006A6A] font-mono">70% / 80%</span>
-                </div>
-                <div className="w-full bg-[#F4EEDA] h-3.5 rounded-full overflow-hidden p-0.5 shadow-inner">
-                  <div className="bg-[#006A6A] h-full rounded-full transition-all duration-1000" style={{ width: '70%' }} />
-                </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {LEVELS.map((level, idx) => (
+                  <button
+                    key={level}
+                    onClick={() => onRate(skill.id, idx)}
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all cursor-pointer
+                      ${currentLevel === idx
+                        ? `${LEVEL_COLORS[idx]} border-transparent scale-105 shadow-sm`
+                        : 'bg-[#FAF3DF] text-[#7C775F] border-[#CDC7AA]/40 hover:border-[#FFE600] hover:bg-white'
+                      }`}
+                  >
+                    {level}
+                  </button>
+                ))}
               </div>
             </div>
+          );
+        })}
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex items-center justify-between pt-2">
+        <button
+          onClick={onBack}
+          className="text-sm font-bold text-[#7C775F] hover:text-[#1E1C10] flex items-center gap-1.5 transition-colors cursor-pointer"
+        >
+          ← Change Track
+        </button>
+        <button
+          onClick={onSubmit}
+          disabled={!allRated}
+          className={`px-6 py-2.5 rounded-full text-sm font-black transition-all
+            ${allRated
+              ? 'bg-[#FFE600] text-[#6A5F00] hover:scale-105 shadow-md cursor-pointer'
+              : 'bg-[#F4EEDA] text-[#CDC7AA] cursor-not-allowed'}`}
+        >
+          {allRated ? 'Analyze My Gaps →' : `Rate ${totalSkills - rated} more skill${totalSkills - rated !== 1 ? 's' : ''}`}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Step 3: Results ──────────────────────────────────────────────────────────
+
+function GapResults({
+  track,
+  ratings,
+  onRetake,
+}: {
+  track: Track;
+  ratings: SkillRatings;
+  onRetake: () => void;
+}) {
+  type SkillResult = {
+    skill: Skill;
+    userPct: number;
+    benchmarkPct: number;
+    gap: number; // positive = deficit, negative = exceeds
+    status: 'strong' | 'on-track' | 'gap';
+  };
+
+  const results: SkillResult[] = track.skills.map((skill) => {
+    const userPct = getUserPct(ratings[skill.id] ?? 0);
+    const gap = skill.benchmark - userPct;
+    const status: SkillResult['status'] =
+      gap <= 0 ? 'strong' : gap <= 15 ? 'on-track' : 'gap';
+    return { skill, userPct, benchmarkPct: skill.benchmark, gap, status };
+  });
+
+  const strong = results.filter((r) => r.status === 'strong');
+  const onTrack = results.filter((r) => r.status === 'on-track');
+  const gapSkills = results.filter((r) => r.status === 'gap');
+
+  const avgUserPct = Math.round(results.reduce((s, r) => s + r.userPct, 0) / results.length);
+  const avgBenchmark = Math.round(results.reduce((s, r) => s + r.benchmarkPct, 0) / results.length);
+  const overallMatch = Math.round((avgUserPct / avgBenchmark) * 100);
+
+  const STATUS_META = {
+    strong: {
+      label: 'Strong',
+      barColor: 'bg-[#16A34A]',
+      badgeClass: 'bg-[#D4EDDA] text-[#155724]',
+      icon: <CheckCircle2 className="h-3.5 w-3.5" />,
+    },
+    'on-track': {
+      label: 'On Track',
+      barColor: 'bg-[#FFE600]',
+      badgeClass: 'bg-[#FFF3CD] text-[#856404]',
+      icon: <Flame className="h-3.5 w-3.5" />,
+    },
+    gap: {
+      label: 'Needs Work',
+      barColor: 'bg-[#EF4444]',
+      badgeClass: 'bg-[#FFE6E6] text-[#C0392B]',
+      icon: <AlertTriangle className="h-3.5 w-3.5" />,
+    },
+  };
+
+  return (
+    <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+      {/* Top summary row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Overall Match */}
+        <div className="bg-white border border-[#CDC7AA]/40 rounded-2xl p-5 flex flex-col items-center text-center">
+          <div className="relative w-20 h-20 mb-3">
+            <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="34" fill="none" stroke="#F4EEDA" strokeWidth="8" />
+              <circle
+                cx="40" cy="40" r="34" fill="none"
+                stroke={overallMatch >= 75 ? '#16A34A' : overallMatch >= 50 ? '#FFE600' : '#EF4444'}
+                strokeWidth="8"
+                strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 34}`}
+                strokeDashoffset={`${2 * Math.PI * 34 * (1 - overallMatch / 100)}`}
+                className="transition-all duration-1000"
+              />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-lg font-black text-[#1E1C10]">
+              {overallMatch}%
+            </span>
           </div>
-
-          {/* Interactive Radar Simulation Card */}
-          <div className="bg-[#FAF3DF] border border-[#CDC7AA]/50 p-6 sm:p-7 rounded-3xl shadow-sm flex flex-col md:flex-row items-center gap-6">
-            <div className="flex-1 flex flex-col gap-3">
-              <h3 className="text-lg font-bold text-[#1E1C10] font-heading">Skill Equilibrium Polygon</h3>
-              <p className="text-xs text-[#4B4731] leading-relaxed">
-                Your profile exhibits a strong frontend tilt with solid algorithmic grounding. Closing the System Design gap will unlock Tier-1 product company interviews.
-              </p>
-              <div className="flex gap-2 flex-wrap">
-                <span className="px-3.5 py-1 bg-[#FFE600] text-[#726600] text-xs font-bold rounded-full shadow-sm">
-                  DSA: Good
-                </span>
-                <span className="px-3.5 py-1 bg-[#FF6B6B]/20 text-[#BA1A1A] border border-[#FF6B6B]/30 text-xs font-bold rounded-full">
-                  System Design: Needs Focus
-                </span>
-              </div>
-            </div>
-
-            {/* Radar Chart Styled with Stitch Colors */}
-            <div className="w-64 h-60 relative flex items-center justify-center shrink-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={mockSkillRadarData}>
-                  <PolarGrid stroke="#CDC7AA" strokeDasharray="3 3" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#4B4731', fontSize: 10, fontWeight: 700 }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                  <Radar name="Target Benchmark" dataKey="benchmark" stroke="#6A5F00" fill="#6A5F00" fillOpacity={0.12} strokeWidth={2} />
-                  <Radar name="Your Score" dataKey="user" stroke="#00F5D4" fill="#00F5D4" fillOpacity={0.35} strokeWidth={2.5} />
-                  <Tooltip />
-                  <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 700 }} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+          <p className="text-xs font-bold text-[#7C775F]">Overall Match</p>
+          <p className="text-[11px] text-[#7C775F] mt-0.5">vs {track.label} benchmark</p>
         </div>
 
-        {/* Right Column: Robot Mascot Tips & Actionable Boosters */}
-        <div className="lg:col-span-5 flex flex-col gap-6">
-          {/* Mascot Tip Card (Stitch Sunshine Yellow) */}
-          <div className="bg-[#FFE600] border-2 border-[#E7D2A0] p-6 rounded-3xl shadow-lg relative overflow-hidden flex flex-col gap-4 text-[#726600]">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#6A5F00] shadow-sm">
-                <SmartToy className="h-7 w-7" />
-              </div>
-              <div>
-                <h4 className="text-base font-black text-[#726600] font-heading">Pal-Bot's Quick Tip</h4>
-                <span className="text-xs text-[#726600]/80 font-bold">AI Mentor Active</span>
-              </div>
-            </div>
-
-            <p className="text-xs text-[#726600] bg-white/75 border border-white/80 p-4 rounded-2xl leading-relaxed shadow-sm font-medium">
-              "Beep boop! 🤖 Your React score is stellar, but interviewers might drill down on Node.js clustering and database indexing. Tackle the 3 recommended modules below to level up!"
-            </p>
-
-            <button
-              onClick={() => setChatOpen(!chatOpen)}
-              className="bg-white text-[#1E1C10] font-extrabold text-xs py-2.5 px-5 rounded-full self-start hover:bg-[#FFF9E9] transition-all shadow-md cursor-pointer"
-            >
-              {chatOpen ? 'Hide Pal-Bot Chat' : 'Chat with Pal-Bot'}
-            </button>
-
-            {/* Quick Interactive Chat Drawer */}
-            {chatOpen && (
-              <div className="mt-2 bg-white border border-[#CDC7AA] p-3.5 rounded-2xl space-y-2.5 animate-in fade-in duration-150">
-                <div className="max-h-40 overflow-y-auto space-y-2 text-xs text-[#1E1C10]">
-                  {chatMessages.map((msg, i) => (
-                    <div
-                      key={i}
-                      className={`p-2.5 rounded-xl ${
-                        msg.startsWith('You:')
-                          ? 'bg-[#FFE600]/30 text-[#726600] font-bold ml-4 text-right'
-                          : 'bg-[#FAF3DF] text-[#1E1C10] mr-4'
-                      }`}
-                    >
-                      {msg}
-                    </div>
-                  ))}
-                </div>
-                <form onSubmit={handleSendMessage} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    placeholder="Ask Pal-Bot a question..."
-                    className="flex-1 bg-[#FAF3DF] border border-[#CDC7AA] rounded-full px-3.5 py-1.5 text-xs text-[#1E1C10] focus:outline-none focus:border-[#6A5F00]"
-                  />
-                  <button
-                    type="submit"
-                    className="bg-[#6A5F00] text-white text-xs font-bold px-4 py-1.5 rounded-full hover:bg-black cursor-pointer"
-                  >
-                    Send
-                  </button>
-                </form>
-              </div>
-            )}
+        {/* Counts */}
+        <div className="sm:col-span-2 grid grid-cols-3 gap-3">
+          <div className="bg-[#D4EDDA] rounded-2xl p-4 flex flex-col items-center text-center">
+            <span className="text-2xl font-black text-[#155724]">{strong.length}</span>
+            <p className="text-[11px] font-bold text-[#155724] mt-1">Strong</p>
+            <CheckCircle2 className="h-4 w-4 text-[#16A34A] mt-1" />
           </div>
+          <div className="bg-[#FFF3CD] rounded-2xl p-4 flex flex-col items-center text-center">
+            <span className="text-2xl font-black text-[#856404]">{onTrack.length}</span>
+            <p className="text-[11px] font-bold text-[#856404] mt-1">On Track</p>
+            <Flame className="h-4 w-4 text-[#D97706] mt-1" />
+          </div>
+          <div className="bg-[#FFE6E6] rounded-2xl p-4 flex flex-col items-center text-center">
+            <span className="text-2xl font-black text-[#C0392B]">{gapSkills.length}</span>
+            <p className="text-[11px] font-bold text-[#C0392B] mt-1">Gaps</p>
+            <TrendingDown className="h-4 w-4 text-[#EF4444] mt-1" />
+          </div>
+        </div>
+      </div>
 
-          {/* Actionable Recommended Boost Modules */}
-          <div className="bg-white border border-[#CDC7AA]/40 p-6 rounded-3xl shadow-sm flex flex-col gap-4">
-            <h3 className="text-lg font-bold text-[#1E1C10] font-heading">Recommended Boost Modules</h3>
-            <div className="flex flex-col gap-3">
-              {[
-                {
-                  title: 'Distributed Cache Systems',
-                  desc: 'System Design • 45 mins',
-                  icon: <Dns className="h-5 w-5 text-[#006A6A]" />,
-                  bg: 'bg-[#00FEFF]/20 border-[#00FEFF]/40',
-                },
-                {
-                  title: 'Advanced SQL Indexing',
-                  desc: 'Node & Backend • 30 mins',
-                  icon: <Storage className="h-5 w-5 text-[#007261]" />,
-                  bg: 'bg-[#26FEDC]/20 border-[#26FEDC]/40',
-                },
-                {
-                  title: 'Redis Pub/Sub Architecture',
-                  desc: 'Distributed Systems • 40 mins',
-                  icon: <Web className="h-5 w-5 text-[#9B5DE5]" />,
-                  bg: 'bg-[#9B5DE5]/20 border-[#9B5DE5]/40',
-                },
-              ].map((mod) => (
-                <div
-                  key={mod.title}
-                  onClick={() => showToast(`Enrolled in "${mod.title}" module!`)}
-                  className="flex items-center justify-between p-3.5 bg-[#FAF3DF] border border-[#CDC7AA]/40 rounded-2xl hover:bg-white hover:border-[#FFE600] hover:shadow-md transition-all cursor-pointer group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center ${mod.bg}`}>
-                      {mod.icon}
-                    </div>
-                    <div>
-                      <h5 className="text-xs font-extrabold text-[#1E1C10] group-hover:text-[#6A5F00] transition-colors">
-                        {mod.title}
-                      </h5>
-                      <span className="text-[11px] text-[#7C775F]">{mod.desc}</span>
+      {/* Skill bars */}
+      <div className="bg-white border border-[#CDC7AA]/40 rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
+        <h3 className="text-base font-black text-[#1E1C10]">Skill-by-Skill Breakdown</h3>
+        <div className="flex flex-col gap-4">
+          {results
+            .sort((a, b) => b.gap - a.gap) // biggest gaps first
+            .map(({ skill, userPct, benchmarkPct, status }) => {
+              const meta = STATUS_META[status];
+              return (
+                <div key={skill.id} className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-[#1E1C10] flex items-center gap-1.5">
+                      {skill.name}
+                    </span>
+                    <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${meta.badgeClass}`}>
+                      {meta.icon}
+                      {meta.label}
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-[#7C775F] group-hover:text-[#6A5F00] group-hover:translate-x-1 transition-all" />
+                  {/* Double bar: benchmark behind, user on top */}
+                  <div className="relative w-full h-3.5 bg-[#F4EEDA] rounded-full overflow-hidden">
+                    {/* Benchmark line */}
+                    <div
+                      className="absolute top-0 h-full bg-[#CDC7AA]/60 rounded-full"
+                      style={{ width: `${benchmarkPct}%` }}
+                    />
+                    {/* User bar */}
+                    <div
+                      className={`absolute top-0 h-full rounded-full transition-all duration-1000 ${meta.barColor}`}
+                      style={{ width: `${userPct}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[10px] font-mono text-[#7C775F]">
+                    <span>You: {userPct}%</span>
+                    <span>Target: {benchmarkPct}%</span>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+        {/* Legend */}
+        <div className="flex items-center gap-4 text-[10px] font-bold text-[#7C775F] pt-1 border-t border-[#F4EEDA]">
+          <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded bg-[#CDC7AA]/60 inline-block" /> Target Benchmark</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-2 rounded bg-[#16A34A] inline-block" /> Your Level</span>
+        </div>
+      </div>
+
+      {/* Priority recommendations */}
+      {gapSkills.length > 0 && (
+        <div className="bg-white border border-[#CDC7AA]/40 rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-[#6A5F00]" />
+            <h3 className="text-base font-black text-[#1E1C10]">Priority Action Plan</h3>
+          </div>
+          <div className="flex flex-col gap-3">
+            {gapSkills
+              .sort((a, b) => b.gap - a.gap)
+              .slice(0, 4)
+              .map(({ skill, gap }) => (
+                <div
+                  key={skill.id}
+                  className="flex items-start gap-3 p-3.5 bg-[#FAF3DF] border border-[#CDC7AA]/40 rounded-xl hover:border-[#FFE600] hover:bg-white transition-all"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-[#FFE600] flex items-center justify-center shrink-0 mt-0.5">
+                    <BookOpen className="h-4 w-4 text-[#6A5F00]" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className="text-xs font-black text-[#1E1C10]">{skill.name}</p>
+                      <span className="text-[10px] font-bold text-[#C0392B] bg-[#FFE6E6] px-1.5 py-0.5 rounded-full">
+                        -{gap}% gap
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#4B4731] leading-relaxed">
+                      {RECOMMENDATIONS[skill.id] ?? 'Practice this skill regularly with hands-on projects.'}
+                    </p>
+                  </div>
                 </div>
               ))}
-            </div>
           </div>
         </div>
+      )}
+
+      {/* Already strong */}
+      {strong.length > 0 && (
+        <div className="bg-[#F0FFF4] border border-[#16A34A]/20 rounded-2xl p-4 flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <Star className="h-4 w-4 text-[#16A34A]" />
+            <h4 className="text-sm font-black text-[#155724]">Your Strengths</h4>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {strong.map(({ skill }) => (
+              <span key={skill.id} className="px-3 py-1 bg-[#D4EDDA] text-[#155724] text-xs font-bold rounded-full">
+                ✓ {skill.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Re-take */}
+      <div className="flex items-center justify-between pt-2">
+        <p className="text-xs text-[#7C775F]">Results saved locally on your device.</p>
+        <button
+          onClick={onRetake}
+          className="flex items-center gap-2 px-4 py-2 bg-[#FAF3DF] border border-[#CDC7AA]/40 text-[#6A5F00] text-xs font-bold rounded-full hover:border-[#FFE600] hover:bg-white transition-all cursor-pointer"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          Re-take Assessment
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+type Step = 'track' | 'rate' | 'result';
+
+interface SavedState {
+  trackId: string;
+  ratings: SkillRatings;
+  step: Step;
+}
+
+export default function SkillGapPage() {
+  const [step, setStep] = useState<Step>('track');
+  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+  const [ratings, setRatings] = useState<SkillRatings>({});
+
+  // Restore from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved: SavedState = JSON.parse(raw);
+        const track = TRACKS.find((t) => t.id === saved.trackId);
+        if (track) {
+          setSelectedTrack(track);
+          setRatings(saved.ratings);
+          setStep(saved.step);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Persist whenever state changes
+  useEffect(() => {
+    if (selectedTrack) {
+      const toSave: SavedState = { trackId: selectedTrack.id, ratings, step };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    }
+  }, [selectedTrack, ratings, step]);
+
+  const handleTrackSelect = (track: Track) => {
+    setSelectedTrack(track);
+    setRatings({});
+    setStep('rate');
+  };
+
+  const handleRate = (skillId: string, level: number) => {
+    setRatings((prev) => ({ ...prev, [skillId]: level }));
+  };
+
+  const handleSubmit = () => setStep('result');
+
+  const handleRetake = () => {
+    setStep('track');
+    setSelectedTrack(null);
+    setRatings({});
+    localStorage.removeItem(STORAGE_KEY);
+  };
+
+  return (
+    <div className="space-y-6 pb-16 w-full font-sans max-w-3xl mx-auto">
+      <PageHeader
+        title="Skill Gap Analyzer"
+        description="Rate your skills honestly — see exactly where you stand vs industry benchmarks."
+        icon={<TrendingUp className="h-6 w-6 text-[#6A5F00]" />}
+        badge={<Badge variant="cyprus">Self Assessment</Badge>}
+        actions={
+          step !== 'track' && (
+            <button
+              onClick={handleRetake}
+              className="flex items-center gap-1.5 text-xs font-bold text-[#7C775F] hover:text-[#1E1C10] transition-colors cursor-pointer"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Start Over
+            </button>
+          )
+        }
+      />
+
+      {/* Step indicator */}
+      <StepIndicator step={step === 'track' ? 1 : step === 'rate' ? 2 : 3} />
+
+      {/* Content panel */}
+      <div className="bg-[#FAF3DF]/60 border border-[#CDC7AA]/40 rounded-3xl p-6 sm:p-8">
+        {step === 'track' && <TrackSelector onSelect={handleTrackSelect} />}
+        {step === 'rate' && selectedTrack && (
+          <SkillRater
+            track={selectedTrack}
+            ratings={ratings}
+            onRate={handleRate}
+            onSubmit={handleSubmit}
+            onBack={handleRetake}
+          />
+        )}
+        {step === 'result' && selectedTrack && (
+          <GapResults
+            track={selectedTrack}
+            ratings={ratings}
+            onRetake={handleRetake}
+          />
+        )}
       </div>
     </div>
   );
