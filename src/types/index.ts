@@ -7,7 +7,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  role: 'student' | 'admin';
+  role: 'student' | 'faculty';
   college?: string;
   branch?: string;
   graduationYear?: number;

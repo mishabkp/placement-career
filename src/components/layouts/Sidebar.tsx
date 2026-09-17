@@ -2,11 +2,13 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, User, FileText, Map, TrendingUp,
   Mic, Code2, BookOpen, Briefcase, BarChart3,
-  Settings, ShieldCheck, X, ChevronLeft, ChevronRight,
-  GitBranch, Globe, Sparkles
+  Settings, X, ChevronLeft, ChevronRight,
+  GitBranch, Globe, Sparkles, Building2, GraduationCap,
+  LogOut, ShieldAlert
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -25,7 +27,8 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const navGroups: NavGroup[] = [
+// Navigation structure for Students
+const studentNavGroups: NavGroup[] = [
   {
     group: 'MAIN',
     items: [
@@ -43,6 +46,7 @@ const navGroups: NavGroup[] = [
   {
     group: 'PREPARATION',
     items: [
+      { label: 'Company Prep Kits', path: '/company-prep', icon: <Building2 className="h-[18px] w-[18px]" />, badge: 'NEW' },
       { label: 'Resume Analyzer', path: '/resume', icon: <FileText className="h-[18px] w-[18px]" /> },
       { label: 'AI Interview', path: '/interview', icon: <Mic className="h-[18px] w-[18px]" />, badge: 'AI' },
       { label: 'Coding Practice', path: '/coding', icon: <Code2 className="h-[18px] w-[18px]" /> },
@@ -67,7 +71,31 @@ const navGroups: NavGroup[] = [
     group: 'ACCOUNT',
     items: [
       { label: 'Settings', path: '/settings', icon: <Settings className="h-[18px] w-[18px]" /> },
-      { label: 'Admin', path: '/admin', icon: <ShieldCheck className="h-[18px] w-[18px]" /> },
+    ],
+  },
+];
+
+// Navigation structure for Faculty / TPO
+const facultyNavGroups: NavGroup[] = [
+  {
+    group: 'TPO CONTROL CENTER',
+    items: [
+      { label: 'Faculty / TPO Portal', path: '/faculty-portal', icon: <GraduationCap className="h-[18px] w-[18px]" />, badge: 'TPO' },
+    ],
+  },
+  {
+    group: 'ACADEMIC BENCHMARKS',
+    items: [
+      { label: 'Company Prep Kits', path: '/company-prep', icon: <Building2 className="h-[18px] w-[18px]" /> },
+      { label: 'Coding Practice Bank', path: '/coding', icon: <Code2 className="h-[18px] w-[18px]" /> },
+      { label: 'Recruiter Job Board', path: '/jobs', icon: <Briefcase className="h-[18px] w-[18px]" /> },
+      { label: 'Student Dashboard (View)', path: '/dashboard', icon: <LayoutDashboard className="h-[18px] w-[18px]" /> },
+    ],
+  },
+  {
+    group: 'ACCOUNT',
+    items: [
+      { label: 'Settings', path: '/settings', icon: <Settings className="h-[18px] w-[18px]" /> },
     ],
   },
 ];
@@ -141,6 +169,9 @@ function NavItemLink({
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const { user, isFaculty, switchRole, logout } = useAuth();
+
+  const currentNavGroups = isFaculty ? facultyNavGroups : studentNavGroups;
 
   return (
     <>
@@ -181,7 +212,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   Placement Pal
                 </span>
                 <span className="block text-[10px] text-[#726600] font-bold tracking-wider uppercase">
-                  AI Placement Platform
+                  {isFaculty ? 'TPO Admin Portal' : 'AI Placement Platform'}
                 </span>
               </div>
             )}
@@ -201,7 +232,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* ─── Navigation Groups ─── */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5 scrollbar-thin">
-          {navGroups.map((group) => (
+          {currentNavGroups.map((group) => (
             <div key={group.group} className="space-y-1">
               {!collapsed ? (
                 <div className="px-3 pb-1 text-[10px] font-extrabold tracking-wider text-[#7C775F] uppercase">
@@ -225,29 +256,68 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           ))}
         </div>
 
-        {/* ─── Bottom Student Pill Card ─── */}
-        <div className="p-3 border-t border-[#CDC7AA]/30">
+        {/* ─── Bottom User Profile / Role Pill Card ─── */}
+        <div className="p-3 border-t border-[#CDC7AA]/30 space-y-2">
           {!collapsed ? (
-            <div className="flex items-center justify-between p-2.5 rounded-2xl bg-[#F4EEDA] border border-[#CDC7AA]/50 shadow-sm">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-[#FFE600] text-[#726600] font-bold text-xs flex items-center justify-center shadow-inner">
-                  AP
+            <div className="p-2.5 rounded-2xl bg-[#F4EEDA] border border-[#CDC7AA]/50 shadow-sm space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div
+                    className={cn(
+                      'w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center shadow-inner flex-shrink-0',
+                      isFaculty ? 'bg-[#1E1C10] text-[#FFE600]' : 'bg-[#FFE600] text-[#726600]'
+                    )}
+                  >
+                    {user.initials}
+                  </div>
+                  <div className="truncate">
+                    <div className="text-xs font-bold text-[#1E1C10] truncate flex items-center gap-1.5">
+                      <span>{user.name}</span>
+                    </div>
+                    <div className="text-[10px] text-[#726600] font-semibold truncate">
+                      {user.track}
+                    </div>
+                  </div>
                 </div>
-                <div className="truncate">
-                  <div className="text-xs font-bold text-[#1E1C10] truncate">Arjun Patel</div>
-                  <div className="text-[10px] text-[#726600] font-semibold truncate">Tier-1 SDE Track</div>
-                </div>
+                <button
+                  onClick={() => setCollapsed(true)}
+                  className="p-1 rounded-lg text-[#7C775F] hover:text-[#1E1C10] hover:bg-[#EEE8D4] transition-colors flex-shrink-0"
+                  title="Collapse sidebar"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
               </div>
-              <button
-                onClick={() => setCollapsed(true)}
-                className="p-1 rounded-lg text-[#7C775F] hover:text-[#1E1C10] hover:bg-[#EEE8D4] transition-colors"
-                title="Collapse sidebar"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
+
+              {/* Role Switcher / Quick Action */}
+              <div className="pt-1.5 border-t border-[#CDC7AA]/40 flex items-center justify-between text-[10px] font-bold">
+                <span className={cn(
+                  'px-2 py-0.5 rounded-full',
+                  isFaculty ? 'bg-[#FFE600] text-[#726600]' : 'bg-[#EEE8D4] text-[#4B4731]'
+                )}>
+                  {isFaculty ? 'TPO Mode' : 'Student Mode'}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => switchRole(isFaculty ? 'student' : 'faculty')}
+                  className="text-[#726600] hover:underline font-extrabold"
+                  title="Switch between Student and TPO view"
+                >
+                  Switch to {isFaculty ? 'Student' : 'TPO'} →
+                </button>
+              </div>
             </div>
           ) : (
-            <div className="flex justify-center">
+            <div className="flex flex-col items-center gap-2">
+              <div
+                className={cn(
+                  'w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center shadow-inner',
+                  isFaculty ? 'bg-[#1E1C10] text-[#FFE600]' : 'bg-[#FFE600] text-[#726600]'
+                )}
+                title={`${user.name} (${isFaculty ? 'TPO' : 'Student'})`}
+              >
+                {user.initials}
+              </div>
               <button
                 onClick={() => setCollapsed(false)}
                 className="p-2 rounded-xl text-[#7C775F] hover:text-[#1E1C10] hover:bg-[#EEE8D4] transition-colors"

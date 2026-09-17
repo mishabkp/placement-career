@@ -1,11 +1,25 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Eye, EyeOff, GraduationCap } from 'lucide-react';
+import { Eye, EyeOff, GraduationCap, Users } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [activeRole, setActiveRole] = useState<'student' | 'faculty'>('student');
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogin = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    login(activeRole);
+    if (activeRole === 'faculty') {
+      navigate('/faculty-portal');
+    } else {
+      navigate('/dashboard');
+    }
+  };
 
   return (
     <div className="w-full max-w-md">
@@ -17,14 +31,53 @@ export default function LoginPage() {
           <div
             className="mx-auto w-14 h-14 bg-amber-500 border border-amber-400 rounded-2xl flex items-center justify-center mb-4 shadow-glow-sm"
           >
-            <GraduationCap className="h-7 w-7 text-black" />
+            {activeRole === 'faculty' ? (
+              <Users className="h-7 w-7 text-black" />
+            ) : (
+              <GraduationCap className="h-7 w-7 text-black" />
+            )}
           </div>
           <h2 className="text-3xl font-extrabold text-white">Welcome back 👋</h2>
-          <p className="text-sm font-medium text-gray-400">Login to continue your career preparation</p>
+          <p className="text-sm font-medium text-gray-400">
+            {activeRole === 'faculty'
+              ? 'TPO & Faculty Placement Management'
+              : 'Login to continue your career preparation'}
+          </p>
         </div>
 
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-          <Input label="Email Address" type="email" placeholder="you@example.com" required />
+        {/* ─── ROLE SELECTOR SWITCHER ─── */}
+        <div className="grid grid-cols-2 p-1 rounded-2xl bg-[#161B25] border border-gray-800 text-xs font-bold">
+          <button
+            type="button"
+            onClick={() => setActiveRole('student')}
+            className={`py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 ${activeRole === 'student'
+                ? 'bg-amber-400 text-black shadow-sm'
+                : 'text-gray-400 hover:text-white'
+              }`}
+          >
+            <GraduationCap className="w-4 h-4" />
+            <span>Student Portal</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveRole('faculty')}
+            className={`py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 ${activeRole === 'faculty'
+                ? 'bg-amber-400 text-black shadow-sm'
+                : 'text-gray-400 hover:text-white'
+              }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>Faculty / TPO</span>
+          </button>
+        </div>
+
+        <form className="space-y-4" onSubmit={handleLogin}>
+          <Input
+            label={activeRole === 'faculty' ? 'Institutional Email' : 'Student Email'}
+            type="email"
+            placeholder={activeRole === 'faculty' ? 'tpo.officer@college.edu' : 'student@college.edu'}
+            required
+          />
           <Input
             label="Password"
             type={showPassword ? 'text' : 'password'}
@@ -54,11 +107,11 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <Link to="/dashboard" className="block pt-1">
-            <Button type="button" fullWidth size="lg">
-              Login to Dashboard
+          <div className="block pt-1">
+            <Button type="submit" fullWidth size="lg">
+              {activeRole === 'faculty' ? 'Login to Faculty / TPO Portal' : 'Login to Student Dashboard'}
             </Button>
-          </Link>
+          </div>
 
           {/* OR divider */}
           <div className="relative flex items-center py-1">

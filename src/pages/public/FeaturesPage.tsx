@@ -56,6 +56,16 @@ const featureCards = [
     glow: 'group-hover:shadow-[0_0_35px_rgba(245,158,11,0.4)]',
     border: 'group-hover:border-amber-400',
   },
+  {
+    title: 'ASSESSMENT ENGINE',
+    tag: 'NEW MODULE',
+    subtitle: 'Aptitude & Timed MCQ Suite',
+    link: '/assessment',
+    image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=800&auto=format&fit=crop',
+    accent: 'teal',
+    glow: 'group-hover:shadow-[0_0_35px_rgba(20,184,166,0.4)]',
+    border: 'group-hover:border-teal-400',
+  },
 ];
 
 export default function FeaturesPage() {
@@ -78,12 +88,12 @@ export default function FeaturesPage() {
               <span className="gradient-text-amber"> Get Placed</span>
             </h2>
             <p className="text-sm sm:text-base text-gray-400 max-w-2xl mx-auto mt-3 leading-relaxed text-center font-normal">
-              Five high-powered AI modules engineered to prepare, practice, audit, and benchmark your career readiness from day one.
+              Six high-powered placement modules engineered to prepare, practice, audit, and benchmark your career readiness from day one.
             </p>
           </div>
 
-          {/* ─── 5 IMAGE-BACKED MINIMAL CARDS (MATCHING REFERENCE DESIGN) ─── */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 mb-24">
+          {/* ─── 6 IMAGE-BACKED MINIMAL CARDS (MATCHING REFERENCE DESIGN) ─── */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-24">
             {featureCards.map((card) => (
               <Link
                 key={card.title}
@@ -228,7 +238,7 @@ export default function FeaturesPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 max-w-7xl mx-auto gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 max-w-7xl mx-auto gap-4 sm:gap-6">
                 {[
                   {
                     title: 'RESUME ANALYZER',
@@ -245,6 +255,13 @@ export default function FeaturesPage() {
                     image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop',
                   },
                   {
+                    title: 'ASSESSMENT ENGINE',
+                    tag: 'NEW MODULE',
+                    subtitle: 'Aptitude & Timed MCQ Suite',
+                    link: '/assessment',
+                    image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=800&auto=format&fit=crop',
+                  },
+                  {
                     title: 'CODING PRACTICE',
                     tag: 'DISCOVER',
                     subtitle: 'DSA & Algorithmic Practice',
@@ -256,7 +273,7 @@ export default function FeaturesPage() {
                     tag: 'DISCOVER',
                     subtitle: 'AI Concept Tutor & Notes',
                     link: '/learning',
-                    image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=800&auto=format&fit=crop',
+                    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop',
                   },
                 ].map((card) => (
                   <Link
@@ -376,8 +393,15 @@ export default function FeaturesPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 max-w-4xl mx-auto gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 max-w-6xl mx-auto gap-4 sm:gap-6">
                 {[
+                  {
+                    title: 'COMPANY PREP KITS',
+                    tag: 'NEW MODULE',
+                    subtitle: 'Hiring Blueprints & Drives',
+                    link: '/company-prep',
+                    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop',
+                  },
                   {
                     title: 'JOB MATCHER',
                     tag: 'DISCOVER',

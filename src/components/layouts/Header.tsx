@@ -1,6 +1,8 @@
-import { Menu, Bell, Search, User } from 'lucide-react';
+import { Menu, Bell, Search, User, LogOut, ArrowRightLeft, ShieldCheck, GraduationCap } from 'lucide-react';
 import { mockNotifications } from '../../data/mockData';
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -8,7 +10,27 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const [showNotif, setShowNotif] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { user, isFaculty, switchRole, logout } = useAuth();
+  const navigate = useNavigate();
   const unreadCount = mockNotifications.length;
+
+  const handleToggleRole = () => {
+    const nextRole = isFaculty ? 'student' : 'faculty';
+    switchRole(nextRole);
+    setShowProfileMenu(false);
+    if (nextRole === 'faculty') {
+      navigate('/faculty-portal');
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    setShowProfileMenu(false);
+    navigate('/login');
+  };
 
   return (
     <header
@@ -37,13 +59,29 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
       </div>
 
-      {/* Right: Notifications & Avatar matching Stitch */}
+      {/* Right: Role indicator, Notifications & User Profile */}
       <div className="flex items-center gap-3">
+        {/* Role Badge */}
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF3DF] border border-[#CDC7AA]/50 text-xs font-bold">
+          {isFaculty ? (
+            <>
+              <GraduationCap className="h-3.5 w-3.5 text-[#726600]" />
+              <span className="text-[#726600]">TPO Officer</span>
+            </>
+          ) : (
+            <>
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="text-[#4B4731]">Student</span>
+            </>
+          )}
+        </div>
+
         {/* Notifications */}
         <div className="relative">
           <button
             onClick={() => setShowNotif(!showNotif)}
             className="relative w-10 h-10 rounded-full bg-[#F4EEDA] border border-[#CDC7AA]/50 flex items-center justify-center text-[#1E1C10] hover:bg-[#EEE8D4] transition-colors cursor-pointer"
+            aria-label="Toggle notifications"
           >
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
@@ -74,15 +112,51 @@ export function Header({ onMenuClick }: HeaderProps) {
                     </div>
                   ))}
                 </div>
-
               </div>
             </>
           )}
         </div>
 
-        {/* User avatar with Stitch Yellow */}
-        <div className="w-10 h-10 rounded-full bg-[#FFE600] border border-[#CDC7AA] flex items-center justify-center shadow-sm text-[#726600] font-bold">
-          <User className="h-5 w-5" />
+        {/* User avatar menu */}
+        <div className="relative">
+          <button
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="w-10 h-10 rounded-full bg-[#FFE600] border border-[#CDC7AA] flex items-center justify-center shadow-sm text-[#726600] font-bold text-xs hover:scale-105 transition-transform"
+            aria-label="User account"
+          >
+            {user.initials}
+          </button>
+
+          {showProfileMenu && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowProfileMenu(false)} />
+              <div className="absolute right-0 mt-2 w-56 bg-white border border-[#CDC7AA] rounded-2xl z-20 overflow-hidden shadow-2xl p-2 animate-in fade-in zoom-in duration-150 text-xs">
+                <div className="p-2.5 border-b border-[#CDC7AA]/30">
+                  <p className="font-bold text-[#1E1C10]">{user.name}</p>
+                  <p className="text-[11px] text-[#726600] font-semibold">{user.track}</p>
+                  <p className="text-[10px] text-[#7C775F] truncate">{user.email}</p>
+                </div>
+
+                <div className="py-1 space-y-0.5">
+                  <button
+                    onClick={handleToggleRole}
+                    className="w-full px-3 py-2 text-left rounded-xl hover:bg-[#FAF3DF] text-[#1E1C10] font-medium flex items-center gap-2 transition-colors"
+                  >
+                    <ArrowRightLeft className="h-3.5 w-3.5 text-[#726600]" />
+                    <span>Switch to {isFaculty ? 'Student Mode' : 'Faculty / TPO Mode'}</span>
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-3 py-2 text-left rounded-xl hover:bg-red-50 text-red-600 font-medium flex items-center gap-2 transition-colors"
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>

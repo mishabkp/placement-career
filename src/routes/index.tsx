@@ -9,6 +9,7 @@ import FeaturesPage from '../pages/public/FeaturesPage';
 import ContactPage from '../pages/public/ContactPage';
 import LoginPage from '../pages/public/LoginPage';
 import RegisterPage from '../pages/public/RegisterPage';
+import AssessmentPortalPage from '../pages/public/AssessmentPortalPage';
 
 // Authenticated pages
 import DashboardPage from '../pages/app/DashboardPage';
@@ -19,12 +20,13 @@ import SkillGapPage from '../pages/app/SkillGapPage';
 import InterviewPage from '../pages/app/InterviewPage';
 import CodingPage from '../pages/app/CodingPage';
 import LearningPage from '../pages/app/LearningPage';
+import CompanyPrepPage from '../pages/app/CompanyPrepPage';
+import FacultyPortalPage from '../pages/app/FacultyPortalPage';
 import GithubPage from '../pages/app/GithubPage';
 import LinkedinPage from '../pages/app/LinkedinPage';
 import JobsPage from '../pages/app/JobsPage';
 import ProgressPage from '../pages/app/ProgressPage';
 import SettingsPage from '../pages/app/SettingsPage';
-import AdminPage from '../pages/app/AdminPage';
 
 export default function AppRouter() {
   return (
@@ -32,10 +34,11 @@ export default function AppRouter() {
       {/* Landing page with its standalone full layout */}
       <Route path="/" element={<LandingPage />} />
 
-      {/* Standalone marketing pages, each a separate page */}
+      {/* Standalone marketing & standalone tool pages */}
       <Route path="/about" element={<AboutPage />} />
       <Route path="/features" element={<FeaturesPage />} />
       <Route path="/contact" element={<ContactPage />} />
+      <Route path="/assessment" element={<AssessmentPortalPage />} />
 
       {/* Public Auth routes wrapped by centered AuthLayout */}
       <Route element={<AuthLayout />}>
@@ -53,12 +56,15 @@ export default function AppRouter() {
         <Route path="/interview" element={<InterviewPage />} />
         <Route path="/coding" element={<CodingPage />} />
         <Route path="/learning" element={<LearningPage />} />
+        <Route path="/company-prep" element={<CompanyPrepPage />} />
+        <Route path="/faculty-portal" element={<FacultyPortalPage />} />
         <Route path="/github" element={<GithubPage />} />
         <Route path="/linkedin" element={<LinkedinPage />} />
         <Route path="/jobs" element={<JobsPage />} />
         <Route path="/progress" element={<ProgressPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        {/* /admin legacy redirect to faculty-portal */}
+        <Route path="/admin" element={<Navigate to="/faculty-portal" replace />} />
       </Route>
 
       {/* Catch-all fallback */}
