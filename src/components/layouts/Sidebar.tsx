@@ -169,7 +169,7 @@ function NavItemLink({
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const { user, isFaculty, switchRole, logout } = useAuth();
+  const { user, isFaculty, loginedAsAdmin, switchRole, logout } = useAuth();
 
   const currentNavGroups = isFaculty ? facultyNavGroups : studentNavGroups;
 
@@ -288,7 +288,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </button>
               </div>
 
-              {/* Role Switcher / Quick Action */}
+              {/* Role Switcher — only shown if user logged in as Faculty/Admin */}
               <div className="pt-1.5 border-t border-[#CDC7AA]/40 flex items-center justify-between text-[10px] font-bold">
                 <span className={cn(
                   'px-2 py-0.5 rounded-full',
@@ -297,14 +297,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   {isFaculty ? 'TPO Mode' : 'Student Mode'}
                 </span>
 
-                <button
-                  type="button"
-                  onClick={() => switchRole(isFaculty ? 'student' : 'faculty')}
-                  className="text-[#726600] hover:underline font-extrabold"
-                  title="Switch between Student and TPO view"
-                >
-                  Switch to {isFaculty ? 'Student' : 'TPO'} →
-                </button>
+                {loginedAsAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => switchRole(isFaculty ? 'student' : 'faculty')}
+                    className="text-[#726600] hover:underline font-extrabold"
+                    title="Switch between Student and TPO view"
+                  >
+                    Switch to {isFaculty ? 'Student' : 'TPO'} →
+                  </button>
+                )}
               </div>
             </div>
           ) : (

@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppLayout } from '../layouts/AppLayout';
 import { AuthLayout } from '../layouts/AuthLayout';
+import { useAuth } from '../context/AuthContext';
 
 // Public pages
 import LandingPage from '../pages/public/LandingPage';
@@ -27,6 +28,15 @@ import LinkedinPage from '../pages/app/LinkedinPage';
 import JobsPage from '../pages/app/JobsPage';
 import ProgressPage from '../pages/app/ProgressPage';
 import SettingsPage from '../pages/app/SettingsPage';
+
+// Guard: only users who logged in as Faculty/Admin can access
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { loginedAsAdmin } = useAuth();
+  if (!loginedAsAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <>{children}</>;
+}
 
 export default function AppRouter() {
   return (
@@ -57,14 +67,21 @@ export default function AppRouter() {
         <Route path="/coding" element={<CodingPage />} />
         <Route path="/learning" element={<LearningPage />} />
         <Route path="/company-prep" element={<CompanyPrepPage />} />
-        <Route path="/faculty-portal" element={<FacultyPortalPage />} />
+        <Route
+          path="/faculty-portal"
+          element={
+            <AdminRoute>
+              <FacultyPortalPage />
+            </AdminRoute>
+          }
+        />
         <Route path="/github" element={<GithubPage />} />
         <Route path="/linkedin" element={<LinkedinPage />} />
         <Route path="/jobs" element={<JobsPage />} />
         <Route path="/progress" element={<ProgressPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        {/* /admin legacy redirect to faculty-portal */}
-        <Route path="/admin" element={<Navigate to="/faculty-portal" replace />} />
+        {/* /admin legacy redirect — also guarded */}
+        <Route path="/admin" element={<AdminRoute><Navigate to="/faculty-portal" replace /></AdminRoute>} />
       </Route>
 
       {/* Catch-all fallback */}

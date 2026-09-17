@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export type UserRole = 'student' | 'faculty';
+export type LoginType = 'student' | 'faculty' | null;
 
 export interface AuthUser {
   id: string;
@@ -38,6 +39,7 @@ const FACULTY_USER: AuthUser = {
 interface AuthContextType {
   role: UserRole;
   user: AuthUser;
+  loginedAsAdmin: boolean;
   login: (role: UserRole) => void;
   logout: () => void;
   switchRole: (role: UserRole) => void;
@@ -53,21 +55,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return saved === 'faculty' ? 'faculty' : 'student';
   });
 
+  // Track whether the user explicitly logged in as faculty/admin.
+  // Students cannot switch to TPO mode unless loginedAsAdmin is true.
+  const [loginedAsAdmin, setLoginedAsAdmin] = useState<boolean>(() => {
+    return localStorage.getItem('placement_pal_logined_as_admin') === 'true';
+  });
+
   useEffect(() => {
     localStorage.setItem('placement_pal_user_role', role);
   }, [role]);
 
   const login = (newRole: UserRole) => {
+    const isAdmin = newRole === 'faculty';
     setRoleState(newRole);
+    setLoginedAsAdmin(isAdmin);
     localStorage.setItem('placement_pal_user_role', newRole);
+    localStorage.setItem('placement_pal_logined_as_admin', String(isAdmin));
   };
 
   const logout = () => {
     setRoleState('student');
+    setLoginedAsAdmin(false);
     localStorage.removeItem('placement_pal_user_role');
+    localStorage.removeItem('placement_pal_logined_as_admin');
   };
 
   const switchRole = (newRole: UserRole) => {
+    // Only allow role switching if the user logged in as admin
+    if (newRole === 'faculty' && !loginedAsAdmin) return;
     setRoleState(newRole);
   };
 
@@ -78,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         role,
         user,
+        loginedAsAdmin,
         login,
         logout,
         switchRole,
