@@ -3,8 +3,7 @@ import {
   LayoutDashboard, User, FileText, Map, TrendingUp,
   Mic, Code2, BookOpen, Briefcase, BarChart3,
   Settings, X, ChevronLeft, ChevronRight,
-  GitBranch, Globe, Sparkles, Building2, GraduationCap,
-  LogOut, ShieldAlert
+  GitBranch, Globe, Sparkles, Building2, GraduationCap
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useState } from 'react';
@@ -27,53 +26,62 @@ interface NavGroup {
   items: NavItem[];
 }
 
-// Navigation structure for Students
-const studentNavGroups: NavGroup[] = [
-  {
-    group: 'MAIN',
-    items: [
-      { label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard className="h-[18px] w-[18px]" /> },
-      { label: 'Profile', path: '/profile', icon: <User className="h-[18px] w-[18px]" /> },
-    ],
-  },
-  {
-    group: 'CAREER',
-    items: [
-      { label: 'Career Roadmap', path: '/career-roadmap', icon: <Map className="h-[18px] w-[18px]" /> },
-      { label: 'Skill Gap', path: '/skill-gap', icon: <TrendingUp className="h-[18px] w-[18px]" /> },
-    ],
-  },
-  {
-    group: 'PREPARATION',
-    items: [
-      { label: 'Company Prep Kits', path: '/company-prep', icon: <Building2 className="h-[18px] w-[18px]" />, badge: 'NEW' },
-      { label: 'Resume Analyzer', path: '/resume', icon: <FileText className="h-[18px] w-[18px]" /> },
-      { label: 'AI Interview', path: '/interview', icon: <Mic className="h-[18px] w-[18px]" />, badge: 'AI' },
-      { label: 'Coding Practice', path: '/coding', icon: <Code2 className="h-[18px] w-[18px]" /> },
-      { label: 'Learning Assistant', path: '/learning', icon: <BookOpen className="h-[18px] w-[18px]" />, badge: 'AI' },
-    ],
-  },
-  {
-    group: 'ANALYSIS',
-    items: [
-      { label: 'GitHub Analyzer', path: '/github', icon: <GitBranch className="h-[18px] w-[18px]" /> },
-      { label: 'LinkedIn Analyzer', path: '/linkedin', icon: <Globe className="h-[18px] w-[18px]" /> },
-    ],
-  },
-  {
-    group: 'OPPORTUNITIES',
-    items: [
-      { label: 'Job Matcher', path: '/jobs', icon: <Briefcase className="h-[18px] w-[18px]" /> },
-      { label: 'Career Score', path: '/progress', icon: <BarChart3 className="h-[18px] w-[18px]" /> },
-    ],
-  },
-  {
-    group: 'ACCOUNT',
-    items: [
-      { label: 'Settings', path: '/settings', icon: <Settings className="h-[18px] w-[18px]" /> },
-    ],
-  },
-];
+// Navigation structure for Students based on Branch
+function getStudentNavGroups(branch: string): NavGroup[] {
+  const isCSE = branch === 'CSE';
+  const isECE = branch === 'ECE';
+
+  return [
+    {
+      group: 'MAIN',
+      items: [
+        { label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard className="h-[18px] w-[18px]" /> },
+        { label: 'Profile', path: '/profile', icon: <User className="h-[18px] w-[18px]" /> },
+      ],
+    },
+    {
+      group: 'CAREER',
+      items: [
+        { label: 'Career Roadmap', path: '/career-roadmap', icon: <Map className="h-[18px] w-[18px]" /> },
+        { label: 'Skill Gap', path: '/skill-gap', icon: <TrendingUp className="h-[18px] w-[18px]" /> },
+      ],
+    },
+    {
+      group: 'PREPARATION',
+      items: [
+        { label: 'Company Prep Kits', path: '/company-prep', icon: <Building2 className="h-[18px] w-[18px]" />, badge: 'NEW' },
+        { label: 'Resume Analyzer', path: '/resume', icon: <FileText className="h-[18px] w-[18px]" /> },
+        { label: 'AI Interview', path: '/interview', icon: <Mic className="h-[18px] w-[18px]" />, badge: 'AI' },
+        ...(isCSE || isECE
+          ? [{ label: 'Coding Practice', path: '/coding', icon: <Code2 className="h-[18px] w-[18px]" /> }]
+          : []),
+        { label: 'Learning Assistant', path: '/learning', icon: <BookOpen className="h-[18px] w-[18px]" />, badge: 'AI' },
+      ],
+    },
+    {
+      group: 'ANALYSIS',
+      items: [
+        ...(isCSE
+          ? [{ label: 'GitHub Analyzer', path: '/github', icon: <GitBranch className="h-[18px] w-[18px]" /> }]
+          : []),
+        { label: 'LinkedIn Analyzer', path: '/linkedin', icon: <Globe className="h-[18px] w-[18px]" /> },
+      ],
+    },
+    {
+      group: 'OPPORTUNITIES',
+      items: [
+        { label: 'Job Matcher', path: '/jobs', icon: <Briefcase className="h-[18px] w-[18px]" /> },
+        { label: 'Career Score', path: '/progress', icon: <BarChart3 className="h-[18px] w-[18px]" /> },
+      ],
+    },
+    {
+      group: 'ACCOUNT',
+      items: [
+        { label: 'Settings', path: '/settings', icon: <Settings className="h-[18px] w-[18px]" /> },
+      ],
+    },
+  ];
+}
 
 // Navigation structure for Faculty / TPO
 const facultyNavGroups: NavGroup[] = [
@@ -169,9 +177,9 @@ function NavItemLink({
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const { user, isFaculty, loginedAsAdmin, switchRole, logout } = useAuth();
+  const { user, isFaculty, studentBranch } = useAuth();
 
-  const currentNavGroups = isFaculty ? facultyNavGroups : studentNavGroups;
+  const currentNavGroups = isFaculty ? facultyNavGroups : getStudentNavGroups(studentBranch);
 
   return (
     <>

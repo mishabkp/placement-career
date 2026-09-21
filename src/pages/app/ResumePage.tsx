@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/shared/PageHeader';
 import { Badge } from '../../components/ui/Badge';
+import { useAuth } from '../../context/AuthContext';
 import {
   FileText,
   UploadCloud,
@@ -24,14 +25,17 @@ import {
 
 interface TargetRole {
   id: string;
+  branch: string;
   label: string;
   keywords: string[];
   recommendedFormat: string;
 }
 
 const TARGET_ROLES: TargetRole[] = [
+  // CSE / IT
   {
     id: 'sde',
+    branch: 'CSE',
     label: 'Software Engineer (SDE-1)',
     keywords: [
       'Data Structures', 'Algorithms', 'React', 'Node.js', 'TypeScript',
@@ -41,6 +45,7 @@ const TARGET_ROLES: TargetRole[] = [
   },
   {
     id: 'frontend',
+    branch: 'CSE',
     label: 'Frontend Developer',
     keywords: [
       'React', 'TypeScript', 'Next.js', 'JavaScript (ES6+)', 'Tailwind CSS',
@@ -49,22 +54,102 @@ const TARGET_ROLES: TargetRole[] = [
     recommendedFormat: 'Highlight live portfolio/Vercel links and GitHub repositories.',
   },
   {
-    id: 'backend',
-    label: 'Backend Engineer',
-    keywords: [
-      'Node.js', 'Express', 'Python', 'PostgreSQL', 'MongoDB', 'Redis',
-      'RESTful APIs', 'Microservices', 'Docker', 'Authentication (JWT)', 'AWS'
-    ],
-    recommendedFormat: 'Emphasize database schema design, throughput, and API latency metrics.',
-  },
-  {
     id: 'data',
+    branch: 'CSE',
     label: 'Data Analyst / ML Intern',
     keywords: [
       'Python', 'SQL', 'Pandas', 'NumPy', 'Data Visualization', 'Scikit-learn',
       'Tableau / Power BI', 'Statistics', 'Exploratory Data Analysis (EDA)', 'Git'
     ],
     recommendedFormat: 'Showcase Kaggle / data projects with business impact outcomes.',
+  },
+
+  // ECE
+  {
+    id: 'embedded',
+    branch: 'ECE',
+    label: 'Embedded Systems & Firmware Engineer',
+    keywords: [
+      'Embedded C', 'C++', 'ARM Cortex', 'STM32', 'FreeRTOS',
+      'I2C', 'SPI', 'UART', 'CAN Protocol', 'KiCad / PCB Design', 'Firmware', 'Git'
+    ],
+    recommendedFormat: 'Include hardware board specifications (ESP32/STM32) and protocol oscilloscope traces.',
+  },
+  {
+    id: 'vlsi',
+    branch: 'ECE',
+    label: 'VLSI & Digital ASIC Design Engineer',
+    keywords: [
+      'Verilog', 'SystemVerilog', 'FPGA', 'Xilinx Vivado', 'RTL Design',
+      'Static Timing Analysis (STA)', 'CMOS', 'FSM Synthesis', 'Logic Simulation', 'RISC-V'
+    ],
+    recommendedFormat: 'Highlight synthesis frequencies, gate counts, and timing closure metrics.',
+  },
+
+  // MECH
+  {
+    id: 'mech_cad',
+    branch: 'MECH',
+    label: 'Mechanical CAD / Product Design Engineer',
+    keywords: [
+      'SolidWorks', 'AutoCAD 2D/3D', 'GD&T', 'ANSYS FEA', 'Parametric Modeling',
+      'Design for Manufacturing (DFM)', 'Sheet Metal', '3D Printing', 'Material Selection'
+    ],
+    recommendedFormat: 'List CSWA/CSWP certifications and specific assembly part count reductions.',
+  },
+  {
+    id: 'robotics_mech',
+    branch: 'MECH',
+    label: 'Robotics & Mechatronics Engineer',
+    keywords: [
+      'Kinematics', 'ROS / ROS2', 'Sensors & Actuators', 'Python', 'C++',
+      'PLC Automation', 'Pneumatics', 'SolidWorks', 'Microcontrollers', 'Gazebo'
+    ],
+    recommendedFormat: 'Quantify payload capacities, degrees of freedom (DOF), and cycle time gains.',
+  },
+
+  // EEE
+  {
+    id: 'ev_powertrain',
+    branch: 'EEE',
+    label: 'EV Powertrain & Battery Systems Engineer',
+    keywords: [
+      'Battery Management Systems (BMS)', 'MATLAB / Simulink', 'Power Electronics',
+      'Inverters', 'BLDC Motor Drives', 'State of Charge (SOC)', 'CAN Bus', 'High Voltage Safety'
+    ],
+    recommendedFormat: 'Highlight thermal efficiency, battery pack voltages, and Simulink model validations.',
+  },
+  {
+    id: 'power_automation',
+    branch: 'EEE',
+    label: 'Electrical Power & Industrial Automation Engineer',
+    keywords: [
+      'PLC Programming (Ladder)', 'SCADA Systems', 'Switchgear', 'Relay Protection',
+      'Electrical Machines', 'ETAP / PSpice', 'Single Line Diagrams (SLD)', 'Smart Grids'
+    ],
+    recommendedFormat: 'Detail industrial plant SLDs, power factor improvements, and relay coordination.',
+  },
+
+  // CIVIL
+  {
+    id: 'structural_civil',
+    branch: 'CIVIL',
+    label: 'Structural BIM & Design Engineer',
+    keywords: [
+      'STAAD.Pro', 'ETABS', 'Autodesk Revit BIM', 'AutoCAD Civil 3D',
+      'RCC Design', 'Steel Structures', 'IS 456 / IS 800', 'Concrete Technology', 'BOQ Estimation'
+    ],
+    recommendedFormat: 'Specify building storeys analyzed, seismic zone compliance, and steel weight optimizations.',
+  },
+  {
+    id: 'site_mgmt_civil',
+    branch: 'CIVIL',
+    label: 'Civil Site & Project Planning Engineer',
+    keywords: [
+      'Total Station Surveying', 'Primavera P6', 'MS Project', 'Quantity Surveying',
+      'Rate Analysis', 'Quality Assurance (QA/QC)', 'Geotechnical Investigation', 'Contract Management'
+    ],
+    recommendedFormat: 'Mention project budget ranges, site hectare coverage, and schedule milestone deliveries.',
   },
 ];
 
@@ -109,13 +194,26 @@ interface StoredAnalysis {
 const STORAGE_KEY = 'ats_resume_analysis';
 
 export default function ResumePage() {
-  // Input State
-  const [selectedRole, setSelectedRole] = useState<TargetRole>(TARGET_ROLES[0]);
+  const { studentBranch } = useAuth();
+  const [roleBranchFilter, setRoleBranchFilter] = useState<string>(() => {
+    return ['CSE', 'ECE', 'MECH', 'EEE', 'CIVIL'].includes(studentBranch) ? studentBranch : 'All';
+  });
+
+  // Default initial selected role to first role of student branch
+  const [selectedRole, setSelectedRole] = useState<TargetRole>(() => {
+    const matching = TARGET_ROLES.find((r) => r.branch === studentBranch);
+    return matching || TARGET_ROLES[0];
+  });
   const [inputMode, setInputMode] = useState<'upload' | 'paste'>('upload');
   const [resumeText, setResumeText] = useState('');
   const [fileName, setFileName] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisStep, setAnalysisStep] = useState(0);
+
+  const filteredRoles = useMemo(() => {
+    if (roleBranchFilter === 'All') return TARGET_ROLES;
+    return TARGET_ROLES.filter((r) => r.branch === roleBranchFilter);
+  }, [roleBranchFilter]);
 
   // Analysis Results State
   const [results, setResults] = useState<StoredAnalysis | null>(null);
@@ -343,12 +441,38 @@ ATS CHECKLIST ADVICE:
                 Step 1: Select Your Target Placement Role
               </h2>
             </div>
-            <p className="text-xs text-[#7C775F] mb-4">
-              ATS requirements vary drastically by role. Choose what position you are applying for:
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <p className="text-xs text-[#7C775F]">
+                ATS requirements vary drastically by engineering discipline. Select your field:
+              </p>
+
+              {/* Branch Filter Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                {[
+                  { id: 'All', label: 'All Roles' },
+                  { id: 'CSE', label: 'CSE' },
+                  { id: 'ECE', label: 'ECE' },
+                  { id: 'MECH', label: 'MECH' },
+                  { id: 'EEE', label: 'EEE' },
+                  { id: 'CIVIL', label: 'CIVIL' },
+                ].map((b) => (
+                  <button
+                    key={b.id}
+                    onClick={() => setRoleBranchFilter(b.id)}
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                      roleBranchFilter === b.id
+                        ? 'bg-[#FFE600] text-[#1E1C10] font-black shadow-sm'
+                        : 'bg-white text-[#7C775F] border border-[#CDC7AA]/40 hover:bg-[#FAF3DF]'
+                    }`}
+                  >
+                    {b.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {TARGET_ROLES.map((role) => (
+              {filteredRoles.map((role) => (
                 <button
                   key={role.id}
                   onClick={() => setSelectedRole(role)}
@@ -364,9 +488,10 @@ ATS CHECKLIST ADVICE:
                       <CheckCircle2 className="h-4 w-4 text-[#6A5F00]" />
                     )}
                   </div>
-                  <span className="text-[11px] text-[#7C775F] line-clamp-1">
-                    Checks {role.keywords.length} technical competencies
-                  </span>
+                  <div className="flex items-center justify-between text-[11px] text-[#7C775F] mt-1">
+                    <span>{role.branch} Track</span>
+                    <span>{role.keywords.length} ATS keywords</span>
+                  </div>
                 </button>
               ))}
             </div>

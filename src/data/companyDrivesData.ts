@@ -21,7 +21,7 @@ export interface CompanyDrive {
   name: string;
   shortName: string;
   logoBg: string;
-  category: 'Mass Recruiter' | 'Product Giant' | 'Top IT Services' | 'FinTech / Startup';
+  category: 'Mass Recruiter' | 'Product Giant' | 'Top IT Services' | 'FinTech / Startup' | 'Core Engineering';
   roles: { title: string; ctc: string; type: string }[];
   ctcOverview: string;
   driveStatus: 'Registration Open' | 'Upcoming Drive' | 'Completed';
@@ -402,6 +402,248 @@ export const COMPANY_DRIVES_DATA: CompanyDrive[] = [
       'Amazon places 50% weight on Leadership Principles (Customer Obsession, Ownership, Bias for Action).',
       'Always discuss time and space complexity before writing any code.',
       'Master Graphs (BFS/DFS), Binary Trees, and Dynamic Programming.'
+    ]
+  },
+  {
+    id: 'ti',
+    name: 'Texas Instruments',
+    shortName: 'TI',
+    logoBg: 'from-red-700 to-rose-900',
+    category: 'Core Engineering',
+    roles: [
+      { title: 'Analog Design Engineer', ctc: '₹18.0 - ₹24.0 LPA', type: 'Full-time' },
+      { title: 'Embedded Software Engineer', ctc: '₹15.0 - ₹19.5 LPA', type: 'Full-time' },
+      { title: 'Digital Design / VLSI Intern', ctc: '₹14.0 - ₹18.0 LPA', type: 'Full-time' }
+    ],
+    ctcOverview: '₹14.00 - ₹24.00 LPA',
+    driveStatus: 'Registration Open',
+    deadlineDate: 'October 30, 2026',
+    driveDate: 'November 12-14, 2026',
+    eligibility: {
+      minCgpa: 7.5,
+      min10thPercent: 70,
+      min12thPercent: 70,
+      maxBacklogs: 0,
+      allowedBranches: ['ECE', 'EEE', 'Electronics', 'Electrical']
+    },
+    rounds: [
+      {
+        step: 1,
+        title: 'TI Online Technical Test',
+        type: 'Domain Specific MCQ & Circuit Solving',
+        duration: '90 Mins',
+        details: 'Op-Amps, RC circuits, Digital Logic, CMOS, Microcontrollers, and C programming fundamentals.',
+        cutoffScore: 'Top 10% cutoff'
+      },
+      {
+        step: 2,
+        title: 'Core Technical Round 1 (Circuit Analysis)',
+        type: '1-on-1 Whiteboard',
+        duration: '60 Mins',
+        details: 'Live circuit schematic design, small-signal model calculations, and oscilloscope debugging problems.',
+        cutoffScore: 'Technical Rating >= 8/10'
+      },
+      {
+        step: 3,
+        title: 'Core Technical Round 2 & Fitment',
+        type: 'Deep Dive Technical',
+        duration: '45 Mins',
+        details: 'Lab project implementation, hardware trade-offs, and behavioral questions.',
+        cutoffScore: 'Selection'
+      }
+    ],
+    questions: [
+      {
+        id: 'ti-q1',
+        round: 'Online Assessment',
+        topic: 'Analog Electronics',
+        question: 'What is the unity-gain bandwidth of an operational amplifier with an open-loop gain of 100 dB and a dominant pole at 10 Hz?',
+        solutionHint: '100 dB = 10^5 gain. Unity Gain Bandwidth (UGB) = A0 * f0 = 10^5 * 10 Hz = 1 MHz.',
+        difficulty: 'Medium'
+      },
+      {
+        id: 'ti-q2',
+        round: 'Technical Round',
+        topic: 'Embedded C / Microcontrollers',
+        question: 'Why is the `volatile` keyword essential in microcontroller interrupt service routines (ISRs)?',
+        solutionHint: 'It prevents the compiler from optimizing out memory reads from hardware registers or variables modified asynchronously by ISRs.',
+        difficulty: 'Medium'
+      }
+    ],
+    quickTips: [
+      'Master RC circuits, pole-zero calculations, and Op-Amp configurations.',
+      'Be prepared to derive Bode plots and frequency response on paper.',
+      'Strongly brush up on C pointer arithmetic and register manipulation.'
+    ]
+  },
+  {
+    id: 'tatamotors',
+    name: 'Tata Motors',
+    shortName: 'Tata Motors',
+    logoBg: 'from-blue-700 to-slate-900',
+    category: 'Core Engineering',
+    roles: [
+      { title: 'Graduate Engineer Trainee (GET)', ctc: '₹6.5 - ₹8.5 LPA', type: 'Full-time' },
+      { title: 'EV Powertrain Design Engineer', ctc: '₹8.0 - ₹10.5 LPA', type: 'Full-time' }
+    ],
+    ctcOverview: '₹6.50 - ₹10.50 LPA',
+    driveStatus: 'Registration Open',
+    deadlineDate: 'November 10, 2026',
+    driveDate: 'November 22, 2026',
+    eligibility: {
+      minCgpa: 6.5,
+      min10thPercent: 65,
+      min12thPercent: 65,
+      maxBacklogs: 0,
+      allowedBranches: ['Mechanical', 'MECH', 'Automobile', 'EEE', 'Electrical']
+    },
+    rounds: [
+      {
+        step: 1,
+        title: 'Tata Assessment (Core Mechanical / Electrical + Aptitude)',
+        type: 'Online Assessment',
+        duration: '90 Mins',
+        details: 'Thermodynamics, Strength of Materials, CAD/FEA basics, and Automotive Technology fundamentals.',
+        cutoffScore: '65% sectional'
+      },
+      {
+        step: 2,
+        title: 'Technical Interview (Core Engineering)',
+        type: 'Panel Interview',
+        duration: '45 Mins',
+        details: 'Final year mechanical project, IC engines vs EV powertrains, material selection, and GD&T drawings.',
+        cutoffScore: 'Clearance'
+      },
+      {
+        step: 3,
+        title: 'HR & Tata Values Culture Fit',
+        type: 'Behavioral',
+        duration: '30 Mins',
+        details: 'Situational teamwork questions, relocation willingness, and Tata Code of Conduct alignment.',
+        cutoffScore: 'Final Selection'
+      }
+    ],
+    questions: [
+      {
+        id: 'tm-q1',
+        round: 'Technical Round',
+        topic: 'Strength of Materials',
+        question: 'Explain the difference between Tresca and Von Mises yield criteria and which is preferred for ductile materials.',
+        solutionHint: 'Von Mises is based on shear strain energy and provides closer agreement with experimental results for ductile metals like steel and aluminum.',
+        difficulty: 'Medium'
+      }
+    ],
+    quickTips: [
+      'Revise GD&T symbols and standard engineering drawing projection rules.',
+      'Be clear on your major project: fabrication methodology, load calculations, and design choices.'
+    ]
+  },
+  {
+    id: 'lt_construction',
+    name: 'L&T Construction',
+    shortName: 'L&T',
+    logoBg: 'from-amber-600 to-yellow-800',
+    category: 'Core Engineering',
+    roles: [
+      { title: 'Graduate Engineer Trainee (Civil)', ctc: '₹6.2 - ₹7.5 LPA', type: 'Full-time' },
+      { title: 'Site Planning & Estimation Engineer', ctc: '₹6.5 - ₹8.0 LPA', type: 'Full-time' }
+    ],
+    ctcOverview: '₹6.20 - ₹8.00 LPA',
+    driveStatus: 'Upcoming Drive',
+    deadlineDate: 'November 15, 2026',
+    driveDate: 'December 02, 2026',
+    eligibility: {
+      minCgpa: 6.75,
+      min10thPercent: 65,
+      min12thPercent: 65,
+      maxBacklogs: 0,
+      allowedBranches: ['Civil', 'CIVIL', 'Mechanical', 'MECH']
+    },
+    rounds: [
+      {
+        step: 1,
+        title: 'L&T National Technical Aptitude Test',
+        type: 'Online Exam',
+        duration: '90 Mins',
+        details: 'RCC Design, Soil Mechanics, Surveying, Fluid Mechanics, and Quantitative/Reasoning.',
+        cutoffScore: '70% overall'
+      },
+      {
+        step: 2,
+        title: 'Technical Interview',
+        type: 'Expert Panel',
+        duration: '40 Mins',
+        details: 'Concrete technology, IS code specifications (IS 456, IS 800), construction methodology, and BIM.',
+        cutoffScore: 'Recommended'
+      }
+    ],
+    questions: [
+      {
+        id: 'lt-q1',
+        round: 'Technical Round',
+        topic: 'RCC Design & Codes',
+        question: 'What is the minimum grade of concrete recommended by IS 456 for reinforced concrete subjected to moderate exposure conditions?',
+        solutionHint: 'IS 456 Table 5 specifies M25 for moderate exposure conditions with minimum cement content of 300 kg/m³.',
+        difficulty: 'Easy'
+      }
+    ],
+    quickTips: [
+      'Know IS 456:2000 clauses thoroughly (cover requirements, minimum reinforcement, deflection limits).',
+      'Be ready with site internship experiences and lab testing procedures (Slump test, compressive cube test).'
+    ]
+  },
+  {
+    id: 'schneider',
+    name: 'Schneider Electric',
+    shortName: 'Schneider',
+    logoBg: 'from-emerald-600 to-teal-900',
+    category: 'Core Engineering',
+    roles: [
+      { title: 'Power Systems & Automation Engineer', ctc: '₹7.5 - ₹10.0 LPA', type: 'Full-time' },
+      { title: 'R&D Firmware & Controls Trainee', ctc: '₹8.5 - ₹11.5 LPA', type: 'Full-time' }
+    ],
+    ctcOverview: '₹7.50 - ₹11.50 LPA',
+    driveStatus: 'Registration Open',
+    deadlineDate: 'November 08, 2026',
+    driveDate: 'November 20, 2026',
+    eligibility: {
+      minCgpa: 7.0,
+      min10thPercent: 70,
+      min12thPercent: 70,
+      maxBacklogs: 0,
+      allowedBranches: ['EEE', 'Electrical', 'ECE', 'Electronics', 'Instrumentation']
+    },
+    rounds: [
+      {
+        step: 1,
+        title: 'Schneider Aptitude & Core Electrical Assessment',
+        type: 'Online Test',
+        duration: '90 Mins',
+        details: 'Power systems, circuit breakers, PLC/SCADA logic, power factor correction, and logical reasoning.',
+        cutoffScore: 'Top 15%'
+      },
+      {
+        step: 2,
+        title: 'Technical Interview',
+        type: 'Technical Panel',
+        duration: '45 Mins',
+        details: 'Switchgear operation, relay coordination, smart energy management, and electrical project review.',
+        cutoffScore: 'Clearance'
+      }
+    ],
+    questions: [
+      {
+        id: 'se-q1',
+        round: 'Technical Round',
+        topic: 'Power Protection',
+        question: 'Explain why SF6 gas is widely preferred in high voltage circuit breakers.',
+        solutionHint: 'SF6 has outstanding dielectric strength (2.5x air) and electronegative properties that rapidly extinguish electric arcs.',
+        difficulty: 'Medium'
+      }
+    ],
+    quickTips: [
+      'Review PLC ladder logic symbols and basic timers/counters.',
+      'Understand industrial energy efficiency solutions and substation layouts.'
     ]
   }
 ];

@@ -1,4 +1,4 @@
-import { Menu, Bell, Search, User, LogOut, ArrowRightLeft, ShieldCheck, GraduationCap } from 'lucide-react';
+import { Menu, Bell, Search, LogOut, ArrowRightLeft, GraduationCap, ChevronDown } from 'lucide-react';
 import { mockNotifications } from '../../data/mockData';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
@@ -8,12 +8,23 @@ interface HeaderProps {
   onMenuClick: () => void;
 }
 
+const BRANCH_OPTIONS = [
+  { id: 'CSE', label: 'CSE / IT', icon: '💻' },
+  { id: 'ECE', label: 'Electronics (ECE)', icon: '⚡' },
+  { id: 'EEE', label: 'Electrical (EEE)', icon: '🔌' },
+  { id: 'MECH', label: 'Mechanical (MECH)', icon: '⚙️' },
+  { id: 'CIVIL', label: 'Civil (CIVIL)', icon: '🏗️' },
+];
+
 export function Header({ onMenuClick }: HeaderProps) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const { user, isFaculty, switchRole, logout } = useAuth();
+  const [showBranchMenu, setShowBranchMenu] = useState(false);
+  const { user, isFaculty, switchRole, logout, studentBranch, setStudentBranch } = useAuth();
   const navigate = useNavigate();
   const unreadCount = mockNotifications.length;
+
+  const currentBranchObj = BRANCH_OPTIONS.find((b) => b.id === studentBranch) || BRANCH_OPTIONS[0];
 
   const handleToggleRole = () => {
     const nextRole = isFaculty ? 'student' : 'faculty';
@@ -48,7 +59,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         {/* Search matching Stitch rounded-full design */}
         <div
-          className="hidden sm:flex items-center gap-2.5 bg-[#F4EEDA] border-2 border-[#CDC7AA]/60 rounded-full px-4 py-1.5 w-64 lg:w-96 focus-within:border-[#6A5F00] focus-within:bg-white transition-all shadow-inner"
+          className="hidden sm:flex items-center gap-2.5 bg-[#F4EEDA] border-2 border-[#CDC7AA]/60 rounded-full px-4 py-1.5 w-64 lg:w-80 focus-within:border-[#6A5F00] focus-within:bg-white transition-all shadow-inner"
         >
           <Search className="h-4 w-4 text-[#7C775F] flex-shrink-0" />
           <input
@@ -59,8 +70,56 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
       </div>
 
-      {/* Right: Role indicator, Notifications & User Profile */}
-      <div className="flex items-center gap-3">
+      {/* Right: Branch Selector, Role indicator, Notifications & User Profile */}
+      <div className="flex items-center gap-2.5">
+        {/* Branch Switcher Pill for Students */}
+        {!isFaculty && (
+          <div className="relative">
+            <button
+              onClick={() => setShowBranchMenu(!showBranchMenu)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF3DF] hover:bg-[#F4EEDA] border border-[#CDC7AA]/60 text-xs font-bold text-[#1E1C10] transition-all shadow-sm cursor-pointer"
+              title="Change your engineering branch"
+            >
+              <span>{currentBranchObj.icon}</span>
+              <span className="hidden md:inline">{currentBranchObj.id}</span>
+              <ChevronDown className="h-3 w-3 text-[#7C775F]" />
+            </button>
+
+            {showBranchMenu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowBranchMenu(false)} />
+                <div className="absolute right-0 mt-2 w-52 bg-white border border-[#CDC7AA] rounded-2xl z-20 overflow-hidden shadow-2xl p-1.5 animate-in fade-in zoom-in duration-150 text-xs">
+                  <div className="p-2 border-b border-[#CDC7AA]/30 text-[10px] font-bold text-[#7C775F] uppercase">
+                    Select Your Branch
+                  </div>
+                  <div className="py-1 space-y-0.5">
+                    {BRANCH_OPTIONS.map((b) => (
+                      <button
+                        key={b.id}
+                        onClick={() => {
+                          setStudentBranch(b.id);
+                          setShowBranchMenu(false);
+                        }}
+                        className={`w-full px-3 py-2 text-left rounded-xl font-bold flex items-center justify-between transition-colors cursor-pointer ${
+                          studentBranch === b.id
+                            ? 'bg-[#FFE600] text-[#1E1C10]'
+                            : 'hover:bg-[#FAF3DF] text-[#1E1C10]'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>{b.icon}</span>
+                          <span>{b.label}</span>
+                        </span>
+                        {studentBranch === b.id && <span className="text-xs">✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Role Badge */}
         <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF3DF] border border-[#CDC7AA]/50 text-xs font-bold">
           {isFaculty ? (

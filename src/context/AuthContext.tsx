@@ -12,6 +12,7 @@ export interface AuthUser {
   college: string;
   initials: string;
   department: string;
+  branch: string;
 }
 
 const STUDENT_USER: AuthUser = {
@@ -23,6 +24,7 @@ const STUDENT_USER: AuthUser = {
   college: 'MGM College of Engineering',
   initials: 'AP',
   department: "B.Tech CSE '26",
+  branch: 'CSE',
 };
 
 const FACULTY_USER: AuthUser = {
@@ -34,11 +36,14 @@ const FACULTY_USER: AuthUser = {
   college: 'MGM College of Engineering',
   initials: 'RV',
   department: 'TPO Placement Cell',
+  branch: 'All Branches',
 };
 
 interface AuthContextType {
   role: UserRole;
   user: AuthUser;
+  studentBranch: string;
+  setStudentBranch: (branch: string) => void;
   loginedAsAdmin: boolean;
   login: (role: UserRole) => void;
   logout: () => void;
@@ -54,6 +59,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem('placement_pal_user_role');
     return saved === 'faculty' ? 'faculty' : 'student';
   });
+
+  const [studentBranch, setStudentBranchState] = useState<string>(() => {
+    return localStorage.getItem('placement_pal_student_branch') || 'CSE';
+  });
+
+  const setStudentBranch = (branch: string) => {
+    setStudentBranchState(branch);
+    localStorage.setItem('placement_pal_student_branch', branch);
+  };
 
   // Track whether the user explicitly logged in as faculty/admin.
   // Students cannot switch to TPO mode unless loginedAsAdmin is true.
@@ -86,13 +100,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRoleState(newRole);
   };
 
-  const user = role === 'faculty' ? FACULTY_USER : STUDENT_USER;
+  const branchLabels: Record<string, string> = {
+    CSE: "B.Tech CSE '26",
+    ECE: "B.Tech ECE '26",
+    EEE: "B.Tech EEE '26",
+    MECH: "B.Tech MECH '26",
+    CIVIL: "B.Tech CIVIL '26",
+  };
+
+  const branchTracks: Record<string, string> = {
+    CSE: 'Tier-1 SDE Track',
+    ECE: 'Embedded Systems & VLSI Track',
+    EEE: 'EV Systems & Power Tech Track',
+    MECH: 'CAD/CAM & Mechatronics Track',
+    CIVIL: 'Structural BIM & Planning Track',
+  };
+
+  const user =
+    role === 'faculty'
+      ? FACULTY_USER
+      : {
+          ...STUDENT_USER,
+          branch: studentBranch,
+          department: branchLabels[studentBranch] || `B.Tech ${studentBranch} '26`,
+          track: branchTracks[studentBranch] || 'Tier-1 Engineering Track',
+        };
 
   return (
     <AuthContext.Provider
       value={{
         role,
         user,
+        studentBranch,
+        setStudentBranch,
         loginedAsAdmin,
         login,
         logout,

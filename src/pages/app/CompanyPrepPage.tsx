@@ -7,10 +7,13 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { COMPANY_DRIVES_DATA, type CompanyDrive } from '../../data/companyDrivesData';
+import { useAuth } from '../../context/AuthContext';
 
 export default function CompanyPrepPage() {
+  const { studentBranch } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedBranch, setSelectedBranch] = useState<string>('All');
   const [activeCompany, setActiveCompany] = useState<CompanyDrive>(COMPANY_DRIVES_DATA[0]);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'rounds' | 'eligibility' | 'questions' | 'tips'>('rounds');
@@ -24,19 +27,39 @@ export default function CompanyPrepPage() {
   // Registered state (mock registration)
   const [registeredDrives, setRegisteredDrives] = useState<Record<string, boolean>>({});
 
+  // Branch check helper
+  const isBranchAllowed = (allowedList: string[], branchToCheck: string) => {
+    return allowedList.some((b) => {
+      const lower = b.toLowerCase();
+      if (lower.includes('all')) return true;
+      if (branchToCheck === 'CSE' && (lower.includes('cse') || lower.includes('it') || lower.includes('computer'))) return true;
+      if (branchToCheck === 'ECE' && (lower.includes('ece') || lower.includes('electronics'))) return true;
+      if (branchToCheck === 'EEE' && (lower.includes('eee') || lower.includes('electrical'))) return true;
+      if (branchToCheck === 'MECH' && (lower.includes('mech') || lower.includes('automobile'))) return true;
+      if (branchToCheck === 'CIVIL' && lower.includes('civil')) return true;
+      return lower.includes(branchToCheck.toLowerCase());
+    });
+  };
+
   // Filtered companies
   const filteredCompanies = useMemo(() => {
     return COMPANY_DRIVES_DATA.filter((comp) => {
       const matchCat =
         selectedCategory === 'All' ||
         (selectedCategory === 'Open Drives' ? comp.driveStatus === 'Registration Open' : comp.category === selectedCategory);
+
+      const targetBranch = selectedBranch === 'My Branch' ? studentBranch : selectedBranch;
+      const matchBranch =
+        targetBranch === 'All' || isBranchAllowed(comp.eligibility.allowedBranches, targetBranch);
+
       const matchSearch =
         comp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         comp.shortName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         comp.roles.some((r) => r.title.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchCat && matchSearch;
+
+      return matchCat && matchBranch && matchSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, selectedBranch, studentBranch, searchQuery]);
 
   // Eligibility evaluation logic
   const eligibilityResult = useMemo(() => {
@@ -45,16 +68,18 @@ export default function CompanyPrepPage() {
     const tenthOk = student10th >= el.min10thPercent;
     const twelfthOk = student12th >= el.min12thPercent;
     const backlogOk = studentBacklogs <= el.maxBacklogs;
-    const isOverallEligible = cgpaOk && tenthOk && twelfthOk && backlogOk;
+    const branchOk = isBranchAllowed(el.allowedBranches, studentBranch);
+    const isOverallEligible = cgpaOk && tenthOk && twelfthOk && backlogOk && branchOk;
 
     return {
       cgpaOk,
       tenthOk,
       twelfthOk,
       backlogOk,
+      branchOk,
       isOverallEligible,
     };
-  }, [activeCompany, studentCgpa, student10th, student12th, studentBacklogs]);
+  }, [activeCompany, studentCgpa, student10th, student12th, studentBacklogs, studentBranch]);
 
   const handleOpenKit = (comp: CompanyDrive) => {
     setActiveCompany(comp);
@@ -98,33 +123,61 @@ export default function CompanyPrepPage() {
       </div>
 
       {/* ─── 2. SEARCH & MINIMAL CATEGORY PILLS ─── */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-          {['All', 'Open Drives', 'Mass Recruiter', 'Product Giant', 'Top IT Services'].map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                selectedCategory === cat
-                  ? 'bg-[#1E1C10] text-[#FFF9E9] shadow-sm'
-                  : 'bg-[#FAF3DF] text-[#4B4731] hover:text-[#1E1C10] hover:bg-[#EEE8D4] border border-[#CDC7AA]/40'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+            {['All', 'Open Drives', 'Core Engineering', 'Product Giant', 'Mass Recruiter', 'Top IT Services'].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  selectedCategory === cat
+                    ? 'bg-[#1E1C10] text-[#FFF9E9] shadow-sm'
+                    : 'bg-[#FAF3DF] text-[#4B4731] hover:text-[#1E1C10] hover:bg-[#EEE8D4] border border-[#CDC7AA]/40'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Clean Search Input */}
+          <div className="relative w-full sm:w-64">
+            <Search className="w-4 h-4 text-[#4B4731] absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search company or role..."
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-[#FAF3DF] border border-[#CDC7AA]/60 text-xs text-[#1E1C10] placeholder-[#4B4731]/70 focus:outline-none focus:border-[#726600] focus:bg-[#FFF9E9] transition-all"
+            />
+          </div>
         </div>
 
-        {/* Clean Search Input */}
-        <div className="relative w-full sm:w-64">
-          <Search className="w-4 h-4 text-[#4B4731] absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search company or role..."
-            className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-[#FAF3DF] border border-[#CDC7AA]/60 text-xs text-[#1E1C10] placeholder-[#4B4731]/70 focus:outline-none focus:border-[#726600] focus:bg-[#FFF9E9] transition-all"
-          />
+        {/* Branch Filter Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 border-t border-[#CDC7AA]/30">
+          <span className="text-[11px] font-bold text-[#7C775F] mr-1 flex-shrink-0">Filter by Discipline:</span>
+          {[
+            { id: 'All', label: 'All Drives' },
+            { id: 'My Branch', label: `My Branch (${studentBranch})` },
+            { id: 'CSE', label: 'CSE / IT' },
+            { id: 'ECE', label: 'ECE' },
+            { id: 'MECH', label: 'MECH' },
+            { id: 'EEE', label: 'EEE' },
+            { id: 'CIVIL', label: 'CIVIL' },
+          ].map((b) => (
+            <button
+              key={b.id}
+              onClick={() => setSelectedBranch(b.id)}
+              className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                selectedBranch === b.id
+                  ? 'bg-[#FFE600] text-[#1E1C10] shadow-sm font-black'
+                  : 'bg-white border border-[#CDC7AA]/40 text-[#7C775F] hover:bg-[#FAF3DF]'
+              }`}
+            >
+              {b.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -164,6 +217,21 @@ export default function CompanyPrepPage() {
                   </span>
                   <span>•</span>
                   <span className="font-mono text-[#726600] font-bold">{comp.ctcOverview}</span>
+                </div>
+
+                {/* Allowed Branches Pill */}
+                <div className="mt-2.5 flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-bold text-[#7C775F]">Branches:</span>
+                  {comp.eligibility.allowedBranches.slice(0, 3).map((br) => (
+                    <span key={br} className="px-2 py-0.5 rounded-full bg-white border border-[#CDC7AA]/40 text-[10px] font-bold text-[#1E1C10]">
+                      {br}
+                    </span>
+                  ))}
+                  {comp.eligibility.allowedBranches.length > 3 && (
+                    <span className="text-[10px] text-[#7C775F] font-bold">
+                      +{comp.eligibility.allowedBranches.length - 3}
+                    </span>
+                  )}
                 </div>
 
                 {/* Roles list */}
@@ -392,7 +460,7 @@ export default function CompanyPrepPage() {
                       </h5>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                       <div className={`p-2 rounded-xl border ${eligibilityResult.cgpaOk ? 'bg-emerald-100/50 border-emerald-200 text-emerald-900' : 'bg-red-100/50 border-red-200 text-red-900'}`}>
                         CGPA: {eligibilityResult.cgpaOk ? 'Met ✓' : `Req >= ${activeCompany.eligibility.minCgpa}`}
                       </div>
@@ -404,6 +472,9 @@ export default function CompanyPrepPage() {
                       </div>
                       <div className={`p-2 rounded-xl border ${eligibilityResult.backlogOk ? 'bg-emerald-100/50 border-emerald-200 text-emerald-900' : 'bg-red-100/50 border-red-200 text-red-900'}`}>
                         Backlogs: {eligibilityResult.backlogOk ? 'Met ✓' : `Max ${activeCompany.eligibility.maxBacklogs}`}
+                      </div>
+                      <div className={`p-2 rounded-xl border col-span-2 sm:col-span-1 ${eligibilityResult.branchOk ? 'bg-emerald-100/50 border-emerald-200 text-emerald-900' : 'bg-red-100/50 border-red-200 text-red-900'}`}>
+                        Branch: {eligibilityResult.branchOk ? `${studentBranch} ✓` : `${studentBranch} ✕`}
                       </div>
                     </div>
                   </div>
