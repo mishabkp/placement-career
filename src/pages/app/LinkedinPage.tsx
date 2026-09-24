@@ -15,7 +15,6 @@ import {
   Zap,
   TrendingUp as TrendingUpIcon,
   ShieldCheck,
-  AlertTriangle,
   Award,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';

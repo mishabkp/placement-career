@@ -2,11 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  mockUser,
   mockCareerScore,
-  mockDailyChallenge,
-  mockAIRecommendation,
 } from '../../data/mockData';
+import { useAuth } from '../../context/AuthContext';
 import { CareerQuizSection } from '../../components/sections/CareerQuizSection';
 import {
   Map,
@@ -101,7 +99,201 @@ function ScoreGauge({ score }: { score: number }) {
   );
 }
 
+interface BranchBenchmark {
+  name: string;
+  percent: number;
+  color: string;
+}
+
+interface BranchRoadmapStep {
+  title: string;
+  subtitle: string;
+  status: 'completed' | 'in-progress' | 'upcoming';
+  progress?: number;
+}
+
+interface BranchDashboardConfig {
+  targetRole: string;
+  trackName: string;
+  readinessSummary: string;
+  benchmarkTitle: string;
+  benchmarks: BranchBenchmark[];
+  dailyChallenge: {
+    difficulty: string;
+    title: string;
+    description: string;
+    peersAnswered: number;
+    timeLeft: string;
+    xp: number;
+  };
+  roadmapSnapshot: {
+    trackTitle: string;
+    steps: BranchRoadmapStep[];
+  };
+  aiSuggestion: string;
+}
+
+const BRANCH_DASHBOARD_DATA: Record<string, BranchDashboardConfig> = {
+  CSE: {
+    targetRole: 'SDE-1 (Full Stack)',
+    trackName: 'Full Stack Web Track',
+    readinessSummary: 'You are outperforming 78% of peers in Full Stack roles. Completing your upcoming distributed caching quiz will boost this into the top decile.',
+    benchmarkTitle: 'Full Stack Developer Benchmark',
+    benchmarks: [
+      { name: 'React & State Architecture', percent: 78, color: '#FFE600' },
+      { name: 'TypeScript & Strict Mode', percent: 65, color: '#00F5D4' },
+      { name: 'Node.js & Express Microservices', percent: 58, color: '#9B5DE5' },
+      { name: 'Python Algorithms & DS', percent: 72, color: '#FF6B6B' },
+    ],
+    dailyChallenge: {
+      difficulty: 'Medium',
+      title: 'REST vs. GraphQL Architectures',
+      description: 'Explain the architectural difference between REST and GraphQL. In what scenario would over-fetching justify switching from REST to GraphQL in high-frequency mobile applications?',
+      peersAnswered: 423,
+      timeLeft: '5h 22m',
+      xp: 50,
+    },
+    roadmapSnapshot: {
+      trackTitle: 'Full Stack Web Architecture',
+      steps: [
+        { title: 'Core JavaScript Fundamentals', subtitle: 'Event loops, Closures, Async/Await', status: 'completed' },
+        { title: 'Modern React Frameworks', subtitle: 'Hooks, Context API, Next.js routing', status: 'completed' },
+        { title: 'Backend APIs & Microservices', subtitle: 'Express middleware, JWT Auth, Redis caching', status: 'in-progress', progress: 45 },
+        { title: 'Relational Schema & Optimization', subtitle: 'PostgreSQL indexing, query plans', status: 'upcoming' },
+        { title: 'Cloud Deployment & CI/CD', subtitle: 'Docker multi-stage, GitHub Actions', status: 'upcoming' },
+      ],
+    },
+    aiSuggestion: 'Your resume is strong, but improving your GitHub README files and live demo links could increase your profile quality by 15%.',
+  },
+  ECE: {
+    targetRole: 'VLSI & Embedded Systems Engineer',
+    trackName: 'VLSI & Embedded Systems Track',
+    readinessSummary: 'You are outperforming 81% of peers in Hardware & Embedded tracks. Completing your ARM Cortex RTOS assessment will boost your core score into the top 5%.',
+    benchmarkTitle: 'VLSI & Embedded Hardware Benchmark',
+    benchmarks: [
+      { name: 'Verilog RTL & Digital Synthesis', percent: 82, color: '#FFE600' },
+      { name: 'ARM Cortex & STM32 Firmware', percent: 75, color: '#00F5D4' },
+      { name: 'Communication Protocols (I2C/SPI)', percent: 88, color: '#9B5DE5' },
+      { name: 'KiCad PCB Layout & DRC', percent: 64, color: '#FF6B6B' },
+    ],
+    dailyChallenge: {
+      difficulty: 'Hard',
+      title: 'Metastability & Clock Domain Crossing',
+      description: 'Explain why setup and hold time violations cause metastability in digital flip-flops. How does a 2-flip-flop synchronizer resolve MTBF issues when crossing asynchronous clock boundaries?',
+      peersAnswered: 312,
+      timeLeft: '4h 10m',
+      xp: 60,
+    },
+    roadmapSnapshot: {
+      trackTitle: 'VLSI & Embedded Systems Architecture',
+      steps: [
+        { title: 'Digital Logic Design & Verilog RTL', subtitle: 'FSMs, Combinational ALU, Testbenches', status: 'completed' },
+        { title: 'ARM Microcontroller Peripherals', subtitle: 'STM32 HAL, Clock Config, Timers, Interrupts', status: 'completed' },
+        { title: 'FreeRTOS Kernel & Real-Time Tasks', subtitle: 'Semaphores, Priority Inheritance, Queues', status: 'in-progress', progress: 55 },
+        { title: 'FPGA Synthesis & Vivado Flow', subtitle: 'Constraints, Timing Closure, Block Design', status: 'upcoming' },
+        { title: 'Multilayer PCB Layout with KiCad', subtitle: 'Impedance matching, Ground planes, DRC', status: 'upcoming' },
+      ],
+    },
+    aiSuggestion: 'Adding schematic screenshots and oscilloscope timing captures to your portfolio will greatly impress hardware core recruiters at Qualcomm and TI.',
+  },
+  MECH: {
+    targetRole: 'CAD/CAM & FEA Design Engineer',
+    trackName: 'CAD/CAM & Product Design Track',
+    readinessSummary: 'You are outperforming 76% of peers in Mechanical Design & Simulation. Completing your ANSYS nonlinear analysis project will place you in the top tier for automotive R&D.',
+    benchmarkTitle: 'Mechanical Product Design Benchmark',
+    benchmarks: [
+      { name: 'SolidWorks 3D CAD Modeling', percent: 85, color: '#FFE600' },
+      { name: 'GD&T per ASME Y14.5', percent: 70, color: '#00F5D4' },
+      { name: 'ANSYS Workbench FEA Simulation', percent: 62, color: '#9B5DE5' },
+      { name: 'Fusion 360 CAM & G-Code', percent: 68, color: '#FF6B6B' },
+    ],
+    dailyChallenge: {
+      difficulty: 'Medium',
+      title: 'Von Mises Stress vs. Principal Stress',
+      description: 'Explain why Von Mises yield criteria is preferred over Maximum Principal Stress (Rankine) when evaluating ductile materials under multi-axial complex stress states.',
+      peersAnswered: 289,
+      timeLeft: '6h 45m',
+      xp: 50,
+    },
+    roadmapSnapshot: {
+      trackTitle: 'CAD/CAM & Engineering Simulation',
+      steps: [
+        { title: 'Parametric 3D CAD & Drafting', subtitle: 'Feature trees, Top-down assemblies, BOM', status: 'completed' },
+        { title: 'Geometric Dimensioning & Tolerancing', subtitle: 'Datums, Feature control frames, MMC/LMC', status: 'completed' },
+        { title: 'ANSYS Structural & Thermal FEA', subtitle: 'Hex meshing, Boundary conditions, Stress singularities', status: 'in-progress', progress: 40 },
+        { title: 'CNC Toolpath Generation (CAM)', subtitle: 'Adaptive clearing, Feeds & speeds, G-code', status: 'upcoming' },
+        { title: 'Design for Manufacturing (DFMA)', subtitle: 'Injection molding, Sheet metal guidelines', status: 'upcoming' },
+      ],
+    },
+    aiSuggestion: 'Upload your 3D CAD renders and FEA stress contour reports to your portfolio to stand out for core engineering roles at Tata Motors, Mahindra, and L&T.',
+  },
+  EEE: {
+    targetRole: 'EV Powertrain & Power Electronics Engineer',
+    trackName: 'EV Systems & Power Electronics Track',
+    readinessSummary: 'You are outperforming 79% of peers in Power Systems & EV Engineering. Completing your MATLAB Simulink motor drive model will boost you into the top 10% campus placement band.',
+    benchmarkTitle: 'EV & Power Electronics Benchmark',
+    benchmarks: [
+      { name: 'Power Converters (Buck/Boost/VSI)', percent: 80, color: '#FFE600' },
+      { name: 'MATLAB / Simulink Modeling', percent: 74, color: '#00F5D4' },
+      { name: 'Motor Drives & FOC Control', percent: 60, color: '#9B5DE5' },
+      { name: 'Siemens PLC & SCADA Systems', percent: 66, color: '#FF6B6B' },
+    ],
+    dailyChallenge: {
+      difficulty: 'Hard',
+      title: 'FOC Clarke & Park Transformations',
+      description: 'Explain how Clarke and Park transformations convert 3-phase AC stator currents into decoupled d-q DC components for independent control of motor torque and flux in electric vehicles.',
+      peersAnswered: 245,
+      timeLeft: '3h 30m',
+      xp: 55,
+    },
+    roadmapSnapshot: {
+      trackTitle: 'EV Powertrain & Industrial Automation',
+      steps: [
+        { title: 'Power Electronics Converter Design', subtitle: 'Switching devices, Inductor sizing, SPWM', status: 'completed' },
+        { title: 'MATLAB Simulink Simulation', subtitle: 'PID feedback loops, THD analysis, Inverters', status: 'completed' },
+        { title: 'EV Motor Drives & Vector Control', subtitle: 'PMSM, Inverter switching, FOC transforms', status: 'in-progress', progress: 50 },
+        { title: 'Battery Management Systems (BMS)', subtitle: 'Cell balancing, SOC estimation, Protection', status: 'upcoming' },
+        { title: 'Siemens S7 PLC & SCADA Systems', subtitle: 'Ladder logic, Industrial networks, WinCC', status: 'upcoming' },
+      ],
+    },
+    aiSuggestion: 'Highlight your MATLAB Simulink inverter simulations and battery thermal management calculations to attract EV leaders like Ola Electric, Ather, and Bosch.',
+  },
+  CIVIL: {
+    targetRole: 'Structural BIM & Planning Engineer',
+    trackName: 'Structural Engineering & BIM Track',
+    readinessSummary: 'You are outperforming 82% of peers in Structural Design & Project Planning. Completing your seismic detailing model will elevate your profile to top tier for Larsen & Toubro.',
+    benchmarkTitle: 'Structural Design & BIM Benchmark',
+    benchmarks: [
+      { name: 'STAAD.Pro Structural Analysis', percent: 84, color: '#FFE600' },
+      { name: 'Autodesk Revit BIM Modeling', percent: 76, color: '#00F5D4' },
+      { name: 'IS 456 / IS 1893 Concrete Codes', percent: 78, color: '#9B5DE5' },
+      { name: 'Primavera P6 Project Scheduling', percent: 65, color: '#FF6B6B' },
+    ],
+    dailyChallenge: {
+      difficulty: 'Medium',
+      title: 'Limit State vs. Working Stress in IS 456',
+      description: 'Explain the fundamental design philosophy differences between Limit State Method and Working Stress Method according to IS 456:2000. Why does LSM utilize partial safety factors?',
+      peersAnswered: 330,
+      timeLeft: '7h 15m',
+      xp: 50,
+    },
+    roadmapSnapshot: {
+      trackTitle: 'Structural BIM & Construction Management',
+      steps: [
+        { title: 'Structural Analysis with STAAD.Pro', subtitle: 'Dead, Live, Wind, Seismic IS 1893 load cases', status: 'completed' },
+        { title: 'RCC Design per IS 456:2000', subtitle: 'Limit state flexure, Shear, Ductile detailing', status: 'completed' },
+        { title: 'Autodesk Revit Structural BIM', subtitle: '3D analytical model, Clash detection, Schedules', status: 'in-progress', progress: 50 },
+        { title: 'Navisworks Clash Matrix & 4D BIM', subtitle: 'Time-liner simulation, Interdisciplinary sync', status: 'upcoming' },
+        { title: 'Primavera P6 CPM Project Planning', subtitle: 'WBS, Critical path, EVM S-curves', status: 'upcoming' },
+      ],
+    },
+    aiSuggestion: 'Include your STAAD.Pro bending moment diagrams and Revit 3D structural model sheets to grab the attention of top EPC recruiters at L&T and Shapoorji Pallonji.',
+  },
+};
+
 export default function DashboardPage() {
+  const { user, studentBranch } = useAuth();
+  const branchData = BRANCH_DASHBOARD_DATA[studentBranch] || BRANCH_DASHBOARD_DATA.CSE;
   const [quizDone, setQuizDone] = useState<boolean>(() => {
     return localStorage.getItem(QUIZ_DONE_KEY) === 'true';
   });
@@ -196,12 +388,12 @@ export default function DashboardPage() {
                   Engineering Placement Hub
                 </span>
                 <span className="px-3 py-1 rounded-full bg-[#EEE8D4] text-[#4B4731] font-semibold text-xs">
-                  {mockUser.college} • {mockUser.branch}
+                  {user.college} • {user.department}
                 </span>
               </div>
 
               <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black text-[#1A1A1A] tracking-tight flex items-center gap-2 mt-1">
-                Good morning, {mockUser.name} <span className="inline-block animate-bounce">👋</span>
+                Good morning, {user.name} <span className="inline-block animate-bounce">👋</span>
               </h1>
 
               <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur px-3.5 py-1 rounded-full w-fit mt-1 shadow-sm border border-[#CDC7AA]/30">
@@ -341,10 +533,10 @@ export default function DashboardPage() {
               <span className="font-heading text-base font-extrabold text-[#1A1A1A] group-hover:text-[#6A5F00] transition-colors">
                 Roadmap
               </span>
-              <p className="text-xs text-[#7C775F] mt-0.5">Full Stack Track</p>
+              <p className="text-xs text-[#7C775F] mt-0.5">{branchData.trackName}</p>
               <div className="mt-4 pt-2 flex items-center justify-between bg-[#FAF3DF] px-3 py-1 rounded-full">
                 <span className="text-xs font-medium text-[#7C775F]">Progress</span>
-                <span className="text-xs font-bold text-[#1A1A1A]">Step 3 of 6</span>
+                <span className="text-xs font-bold text-[#1A1A1A]">Step 3 of 5</span>
               </div>
             </Link>
 
@@ -409,11 +601,11 @@ export default function DashboardPage() {
                     <span className="px-3 py-0.5 rounded-full bg-[#26FEDC] text-[#007261] font-bold text-xs">
                       Tier-1 Ready
                     </span>
-                    <span className="text-xs text-[#7C775F] font-semibold">Target role: SDE-1</span>
+                    <span className="text-xs text-[#7C775F] font-semibold">Target role: {branchData.targetRole}</span>
                   </div>
 
                   <p className="text-xs sm:text-sm text-[#1A1A1A] leading-relaxed font-medium">
-                    You are outperforming <strong className="text-[#1A1A1A] font-black">78% of peers</strong> in Full Stack roles. Completing your upcoming system architecture quiz will boost this into the top decile.
+                    {branchData.readinessSummary}
                   </p>
 
                   <div className="flex items-center gap-4 text-xs font-bold mt-1">
@@ -431,67 +623,29 @@ export default function DashboardPage() {
               <div className="flex flex-col gap-3 pt-2">
                 <div className="flex items-center justify-between">
                   <h4 className="font-heading text-sm sm:text-base font-bold text-[#1A1A1A]">
-                    Full Stack Developer Benchmark
+                    {branchData.benchmarkTitle}
                   </h4>
-                  <span className="text-xs text-[#7C775F] font-semibold">4 key competencies</span>
+                  <span className="text-xs text-[#7C775F] font-semibold">{branchData.benchmarks.length} key competencies</span>
                 </div>
 
                 <div className="space-y-3">
-                  {/* React */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs font-bold text-[#1A1A1A]">
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#FFE600]" />
-                        React & State Architecture
-                      </span>
-                      <span className="text-[#7C775F]">78%</span>
+                  {branchData.benchmarks.map((b) => (
+                    <div key={b.name} className="space-y-1">
+                      <div className="flex justify-between text-xs font-bold text-[#1A1A1A]">
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: b.color }} />
+                          {b.name}
+                        </span>
+                        <span className="text-[#7C775F]">{b.percent}%</span>
+                      </div>
+                      <div className="w-full h-3 bg-[#FAF3DF] rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{ width: `${b.percent}%`, backgroundColor: b.color }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full h-3 bg-[#FAF3DF] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#FFE600] rounded-full transition-all duration-700" style={{ width: '78%' }} />
-                    </div>
-                  </div>
-
-                  {/* TypeScript */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs font-bold text-[#1A1A1A]">
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#00F5D4]" />
-                        TypeScript & Strict Mode
-                      </span>
-                      <span className="text-[#7C775F]">65%</span>
-                    </div>
-                    <div className="w-full h-3 bg-[#FAF3DF] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#00F5D4] rounded-full transition-all duration-700" style={{ width: '65%' }} />
-                    </div>
-                  </div>
-
-                  {/* Node.js */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs font-bold text-[#1A1A1A]">
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#9B5DE5]" />
-                        Node.js & Express Microservices
-                      </span>
-                      <span className="text-[#7C775F]">58%</span>
-                    </div>
-                    <div className="w-full h-3 bg-[#FAF3DF] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#9B5DE5] rounded-full transition-all duration-700" style={{ width: '58%' }} />
-                    </div>
-                  </div>
-
-                  {/* Python / DSA */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs font-bold text-[#1A1A1A]">
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#FF6B6B]" />
-                        Python Algorithms & DS
-                      </span>
-                      <span className="text-[#7C775F]">72%</span>
-                    </div>
-                    <div className="w-full h-3 bg-[#FAF3DF] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#FF6B6B] rounded-full transition-all duration-700" style={{ width: '72%' }} />
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -507,11 +661,10 @@ export default function DashboardPage() {
                     <span className="px-2.5 py-0.5 rounded-full bg-[#FF6B6B] text-white font-bold text-[10px]">
                       High Priority
                     </span>
-                    <span className="text-xs font-semibold text-[#7C775F]">AI Coach Suggestion</span>
+                    <span className="text-xs font-semibold text-[#7C775F]">AI Coach Suggestion ({studentBranch})</span>
                   </div>
                   <p className="text-xs sm:text-sm text-[#1A1A1A] font-medium leading-relaxed">
-                    {mockAIRecommendation.message ||
-                      'Your resume is strong, but improving your GitHub README files could increase your profile quality by 15%.'}
+                    {branchData.aiSuggestion}
                   </p>
                 </div>
               </div>
@@ -596,27 +749,26 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-3">
                 <span className="px-3 py-1 rounded-full bg-[#FFE600] text-[#1A1A1A] font-bold text-xs flex items-center gap-1.5 shadow-sm">
                   <Timer className="h-3.5 w-3.5" />
-                  Daily Challenge ({mockDailyChallenge.difficulty || 'Medium'})
+                  Daily Challenge ({branchData.dailyChallenge.difficulty})
                 </span>
-                <span className="text-xs font-bold text-[#6A5F00]">+50 XP</span>
+                <span className="text-xs font-bold text-[#6A5F00]">+{branchData.dailyChallenge.xp} XP</span>
               </div>
 
               <h3 className="font-heading text-lg font-black text-[#1A1A1A] mt-2">
-                {mockDailyChallenge.title || 'REST vs. GraphQL Architectures'}
+                {branchData.dailyChallenge.title}
               </h3>
 
               <div className="bg-white p-4 rounded-2xl mt-3 border border-[#CDC7AA]/30 shadow-inner">
                 <p className="text-xs sm:text-sm text-[#1A1A1A] leading-relaxed font-medium">
-                  "{mockDailyChallenge.description ||
-                    'Explain the architectural difference between REST and GraphQL. In what scenario would over-fetching justify switching from REST to GraphQL in high-frequency mobile applications?'}"
+                  "{branchData.dailyChallenge.description}"
                 </p>
               </div>
 
               <div className="flex items-center justify-between mt-4 text-xs font-bold">
                 <span className="text-[#006B5B] flex items-center gap-1">
-                  👥 423 peers answered
+                  👥 {branchData.dailyChallenge.peersAnswered} peers answered
                 </span>
-                <span className="text-[#FF6B6B]">Ends in 5h 22m</span>
+                <span className="text-[#FF6B6B]">Ends in {branchData.dailyChallenge.timeLeft}</span>
               </div>
 
               <Link
@@ -636,7 +788,7 @@ export default function DashboardPage() {
                     Roadmap Snapshot
                   </span>
                   <h3 className="font-heading text-base sm:text-lg font-black text-[#1A1A1A]">
-                    Full Stack Web Architecture
+                    {branchData.roadmapSnapshot.trackTitle}
                   </h3>
                 </div>
                 <span className="w-8 h-8 rounded-full bg-[#FAF3DF] flex items-center justify-center text-[#6A5F00]">
@@ -646,78 +798,62 @@ export default function DashboardPage() {
 
               {/* Stepper Timeline */}
               <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#CDC7AA]/60">
-                {/* Step 1: Completed */}
-                <div className="relative">
-                  <div className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-[#006B5B] flex items-center justify-center text-white shadow-sm text-[11px]">
-                    ✓
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-[#1A1A1A]">Core JavaScript Fundamentals</span>
-                    <span className="text-[11px] text-[#7C775F]">Event loops, Closures, Async/Await</span>
-                    <span className="text-[10px] font-bold text-[#006B5B] mt-0.5">Completed 100%</span>
-                  </div>
-                </div>
-
-                {/* Step 2: Completed */}
-                <div className="relative">
-                  <div className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-[#006B5B] flex items-center justify-center text-white shadow-sm text-[11px]">
-                    ✓
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-[#1A1A1A]">Modern React Frameworks</span>
-                    <span className="text-[11px] text-[#7C775F]">Hooks, Context API, Next.js routing</span>
-                    <span className="text-[10px] font-bold text-[#006B5B] mt-0.5">Completed 100%</span>
-                  </div>
-                </div>
-
-                {/* Step 3: Current / Active */}
-                <div className="relative">
-                  <div className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-[#FFE600] flex items-center justify-center text-[#1A1A1A] shadow-md animate-pulse text-[11px]">
-                    ▶
-                  </div>
-                  <div className="bg-[#FAF3DF] p-3 rounded-xl flex flex-col gap-1 border border-[#CDC7AA]/40">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-[#1A1A1A]">Backend APIs & Microservices</span>
-                      <span className="px-2 py-0.5 rounded-full bg-[#FFE600] text-[#1A1A1A] font-bold text-[10px]">
-                        In Progress
-                      </span>
+                {branchData.roadmapSnapshot.steps.map((step, idx) => {
+                  if (step.status === 'completed') {
+                    return (
+                      <div key={idx} className="relative">
+                        <div className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-[#006B5B] flex items-center justify-center text-white shadow-sm text-[11px]">
+                          ✓
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-[#1A1A1A]">{step.title}</span>
+                          <span className="text-[11px] text-[#7C775F]">{step.subtitle}</span>
+                          <span className="text-[10px] font-bold text-[#006B5B] mt-0.5">Completed 100%</span>
+                        </div>
+                      </div>
+                    );
+                  }
+                  if (step.status === 'in-progress') {
+                    return (
+                      <div key={idx} className="relative">
+                        <div className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-[#FFE600] flex items-center justify-center text-[#1A1A1A] shadow-md animate-pulse text-[11px]">
+                          ▶
+                        </div>
+                        <div className="bg-[#FAF3DF] p-3 rounded-xl flex flex-col gap-1 border border-[#CDC7AA]/40">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-extrabold text-[#1A1A1A]">{step.title}</span>
+                            <span className="px-2 py-0.5 rounded-full bg-[#FFE600] text-[#1A1A1A] font-bold text-[10px]">
+                              In Progress
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-[#7C775F]">{step.subtitle}</span>
+                          <div className="w-full bg-white rounded-full h-2 mt-1 overflow-hidden">
+                            <div className="bg-[#6A5F00] h-2 rounded-full" style={{ width: `${step.progress || 50}%` }} />
+                          </div>
+                          <span className="text-[10px] font-bold text-[#1A1A1A] text-right">{step.progress || 50}% done</span>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={idx} className="relative">
+                      <div className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-[#EEE8D4] flex items-center justify-center text-[#7C775F] text-[10px]">
+                        •
+                      </div>
+                      <div className="flex flex-col opacity-70">
+                        <span className="text-xs font-bold text-[#1A1A1A]">{step.title}</span>
+                        <span className="text-[11px] text-[#7C775F]">{step.subtitle}</span>
+                      </div>
                     </div>
-                    <span className="text-[11px] text-[#7C775F]">Express middleware, JWT Auth, Redis caching</span>
-                    <div className="w-full bg-white rounded-full h-2 mt-1 overflow-hidden">
-                      <div className="bg-[#6A5F00] h-2 rounded-full" style={{ width: '45%' }} />
-                    </div>
-                    <span className="text-[10px] font-bold text-[#1A1A1A] text-right">45% done</span>
-                  </div>
-                </div>
-
-                {/* Step 4: Upcoming */}
-                <div className="relative">
-                  <div className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-[#EEE8D4] flex items-center justify-center text-[#7C775F] text-[10px]">
-                    •
-                  </div>
-                  <div className="flex flex-col opacity-70">
-                    <span className="text-xs font-bold text-[#1A1A1A]">Relational Schema & Optimization</span>
-                    <span className="text-[11px] text-[#7C775F]">PostgreSQL indexing, query plans</span>
-                  </div>
-                </div>
-
-                {/* Step 5: Upcoming */}
-                <div className="relative">
-                  <div className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-[#EEE8D4] flex items-center justify-center text-[#7C775F] text-[10px]">
-                    •
-                  </div>
-                  <div className="flex flex-col opacity-70">
-                    <span className="text-xs font-bold text-[#1A1A1A]">CI/CD & Cloud Deployment</span>
-                    <span className="text-[11px] text-[#7C775F]">Docker containers, AWS ECS pipeline</span>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
 
               <Link
                 to="/career-roadmap"
                 className="w-full py-2.5 rounded-full bg-[#FAF3DF] text-[#1A1A1A] font-bold text-xs flex items-center justify-center gap-1 hover:bg-[#EEE8D4] transition-colors border border-[#CDC7AA]/30"
               >
-                <span>View Full 6-Stage Roadmap</span>
+                <span>View Full Roadmap</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>

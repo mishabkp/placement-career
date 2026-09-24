@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import {
   SmartToy,
   Verified,
@@ -30,29 +31,109 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
+interface BranchProfileConfig {
+  degree: string;
+  department: string;
+  rollNo: string;
+  trackBadge: string;
+  targetRole: string;
+  defaultBio: string;
+  polishedBio: string;
+}
+
+const BRANCH_PROFILE_DATA: Record<string, BranchProfileConfig> = {
+  CSE: {
+    degree: 'B.Tech Computer Science & Engineering',
+    department: 'Computer Science & Engineering',
+    rollNo: 'B220541CS',
+    trackBadge: 'Full-Stack Track',
+    targetRole: 'Full Stack Software Engineer',
+    defaultBio:
+      'B.Tech CSE student at NIT Calicut, passionate about full-stack development, distributed systems, and open source. Currently exploring React, Node.js, and cloud architectures.',
+    polishedBio:
+      'Final-year Computer Science student at NIT Calicut specializing in modern web ecosystems, scalable backend microservices, and reactive UIs. Driven by engineering rigorous full-stack solutions.',
+  },
+  ECE: {
+    degree: 'B.Tech Electronics & Communication Engineering',
+    department: 'Electronics & Communication Engineering',
+    rollNo: 'B220412EC',
+    trackBadge: 'VLSI & Embedded Track',
+    targetRole: 'VLSI & Embedded Firmware Engineer',
+    defaultBio:
+      'B.Tech ECE student at NIT Calicut, passionate about digital VLSI design, embedded firmware, and real-time operating systems. Experienced with Verilog, STM32, and FreeRTOS.',
+    polishedBio:
+      'Final-year Electronics & Communication student at NIT Calicut specializing in RTL synthesis, digital logic verification, and low-power embedded firmware for ARM Cortex architectures.',
+  },
+  MECH: {
+    degree: 'B.Tech Mechanical Engineering',
+    department: 'Mechanical Engineering',
+    rollNo: 'B220308ME',
+    trackBadge: 'CAD/CAM & FEA Track',
+    targetRole: 'CAD/CAM & Mechanical Design Engineer',
+    defaultBio:
+      'B.Tech Mechanical Engineering student at NIT Calicut, specializing in 3D CAD modeling, FEA structural simulation, and GD&T. Experienced with SolidWorks, ANSYS, and Fusion 360 CAM.',
+    polishedBio:
+      'Final-year Mechanical Engineering student at NIT Calicut with deep proficiency in parametric 3D CAD modeling, nonlinear FEA stress simulations, and ASME Y14.5 GD&T standards.',
+  },
+  EEE: {
+    degree: 'B.Tech Electrical & Electronics Engineering',
+    department: 'Electrical & Electronics Engineering',
+    rollNo: 'B220215EE',
+    trackBadge: 'EV & Power Systems Track',
+    targetRole: 'EV Powertrain & Power Electronics Engineer',
+    defaultBio:
+      'B.Tech EEE student at NIT Calicut, passionate about electric vehicle powertrains, motor drives (FOC), and power electronics converters. Experienced with MATLAB Simulink and industrial PLCs.',
+    polishedBio:
+      'Final-year Electrical Engineering student at NIT Calicut specializing in EV powertrain design, high-frequency DC-DC converters, Field-Oriented Control (FOC), and smart battery management.',
+  },
+  CIVIL: {
+    degree: 'B.Tech Civil Engineering',
+    department: 'Civil Engineering',
+    rollNo: 'B220104CE',
+    trackBadge: 'Structural BIM Track',
+    targetRole: 'Structural Analysis & BIM Engineer',
+    defaultBio:
+      'B.Tech Civil Engineering student at NIT Calicut, specializing in structural analysis (IS 456), Revit BIM modeling, and Primavera P6 project management. Focused on resilient infrastructure.',
+    polishedBio:
+      'Final-year Civil Engineering student at NIT Calicut proficient in limit state structural design per IS codes, 3D BIM coordination in Autodesk Revit/Navisworks, and CPM project controls.',
+  },
+};
+
 export default function ProfilePage() {
-  const [name, setName] = useState('Arjun Menon');
-  const [email, setEmail] = useState('arjun.menon@example.com');
+  const { user, studentBranch } = useAuth();
+  const profileConfig = BRANCH_PROFILE_DATA[studentBranch] || BRANCH_PROFILE_DATA.CSE;
+
+  const [name, setName] = useState(() => user?.name || 'Arjun Menon');
+  const [email, setEmail] = useState(() => user?.email || 'arjun.menon@example.com');
   const [phone, setPhone] = useState('+91 98470 12345');
-  const [college, setCollege] = useState('NIT Calicut');
-  const [degree, setDegree] = useState('B.Tech Computer Science & Engineering');
-  const [rollNo, setRollNo] = useState('B220541CS');
+  const [college, setCollege] = useState(() => user?.college || 'NIT Calicut');
+  const [degree, setDegree] = useState(profileConfig.degree);
+  const [rollNo, setRollNo] = useState(profileConfig.rollNo);
   const [gradYear, setGradYear] = useState('2026');
   const [cgpa, setCgpa] = useState('8.6 / 10.0');
 
   // Bio & AI Polish
-  const [bio, setBio] = useState(
-    'B.Tech CSE student at NIT Calicut, passionate about full-stack development and open source. Currently exploring React, Node.js, and cloud technologies.'
-  );
+  const [bio, setBio] = useState(profileConfig.defaultBio);
   const [isPolishing, setIsPolishing] = useState(false);
 
   // Target Roles & CTC
-  const [targetRole, setTargetRole] = useState('Full Stack Software Engineer');
+  const [targetRole, setTargetRole] = useState(profileConfig.targetRole);
   const [ctcValue, setCtcValue] = useState(12);
   const [locations, setLocations] = useState(['Bangalore', 'Kochi', 'Remote / Hybrid']);
   const [newCity, setNewCity] = useState('');
   const [showAddCity, setShowAddCity] = useState(false);
   const [openToInternship, setOpenToInternship] = useState(true);
+
+  // Synchronize with active student branch
+  useEffect(() => {
+    setDegree(profileConfig.degree);
+    setRollNo(profileConfig.rollNo);
+    setBio(profileConfig.defaultBio);
+    setTargetRole(profileConfig.targetRole);
+    if (user?.name) setName(user.name);
+    if (user?.email) setEmail(user.email);
+    if (user?.college) setCollege(user.college);
+  }, [studentBranch, profileConfig, user]);
 
   // Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -69,11 +150,9 @@ export default function ProfilePage() {
   const handleAiPolish = () => {
     setIsPolishing(true);
     setTimeout(() => {
-      setBio(
-        'Final-year Computer Science student at NIT Calicut specializing in modern web ecosystems, scalable backend microservices, and reactive UIs. Driven by engineering rigorous full-stack solutions.'
-      );
+      setBio(profileConfig.polishedBio);
       setIsPolishing(false);
-      showToast('🪄 Bio polished with Pal-Bot AI!');
+      showToast(`🪄 ${studentBranch} Bio polished with Pal-Bot AI!`);
     }, 850);
   };
 
@@ -189,13 +268,13 @@ export default function ProfilePage() {
             {/* Chips Row */}
             <div className="flex flex-wrap items-center justify-center gap-2 mb-5">
               <span className="px-3 py-1 rounded-full bg-[#FFE600] text-[#1A1A1A] font-bold text-xs border border-[#CDC7AA]/30">
-                CSE
+                {studentBranch}
               </span>
               <span className="px-3 py-1 rounded-full bg-[#FAF3DF] text-[#1E1C10] font-bold text-xs border border-[#CDC7AA]/30">
-                Batch 2026
+                Batch {gradYear}
               </span>
               <span className="px-3 py-1 rounded-full bg-[#9B5DE5]/20 text-[#6B21A8] font-bold text-xs">
-                Full-Stack Track
+                {profileConfig.trackBadge}
               </span>
             </div>
 
@@ -203,11 +282,11 @@ export default function ProfilePage() {
             <div className="w-full flex flex-col gap-2.5 pt-4 border-t border-[#CDC7AA]/30 bg-[#FAF3DF]/50 p-4 rounded-2xl text-left border border-[#CDC7AA]/20">
               <div className="flex items-center gap-2.5 text-[#1E1C10]">
                 <School className="h-4.5 w-4.5 text-[#6A5F00] shrink-0" />
-                <span className="text-xs font-bold truncate">NIT Calicut</span>
+                <span className="text-xs font-bold truncate">{college}</span>
               </div>
               <div className="flex items-center gap-2.5 text-[#1E1C10]">
                 <Terminal className="h-4.5 w-4.5 text-[#006B5B] shrink-0" />
-                <span className="text-xs font-medium truncate">B.Tech - Computer Science & Engineering</span>
+                <span className="text-xs font-medium truncate">{degree}</span>
               </div>
               <div className="flex items-center gap-2.5 text-[#7C775F]">
                 <MapPin className="h-4.5 w-4.5 text-[#BA1A1A] shrink-0" />

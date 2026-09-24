@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import {
   SmartToy,
   AutoAwesome,
@@ -16,6 +17,13 @@ import {
   Globe,
   Play,
   RotateCcw,
+  Zap,
+  Wrench,
+  Building,
+  Activity,
+  Flame,
+  Radio,
+  Compass,
 } from 'lucide-react';
 
 interface Concept {
@@ -24,101 +32,335 @@ interface Concept {
   category: string;
   desc: string;
   xp: string;
-  icon: typeof Cpu;
+  icon: any;
   analogy: string;
   steps: string[];
 }
 
-const CONCEPTS: Concept[] = [
-  {
-    id: 'c1',
-    title: 'Event Loop in Node.js',
-    category: 'Core CS & OS',
-    desc: 'Call stack, Libuv thread pool & callbacks',
-    xp: '+50 XP',
-    icon: RotateCcw,
-    analogy:
-      'Like a head chef in a busy pizzeria 👨‍🍳. While heavy pizzas bake in the oven (Libuv thread pool), the chef keeps taking counter orders. When ready, the timer rings (callback queue), and the chef serves the pizza immediately!',
-    steps: [
-      'Call Stack: Synchronous execution runs top to bottom',
-      'Libuv Thread Pool: Async I/O (file, network) handed off to 4 background threads',
-      'Event Queue: Completed callbacks wait in queue',
-      'Event Loop: Continuously pushes waiting callbacks onto empty stack',
+interface BranchLearningData {
+  categories: string[];
+  concepts: Concept[];
+  questQuestion: string;
+}
+
+const BRANCH_LEARNING_DATA: Record<string, BranchLearningData> = {
+  CSE: {
+    categories: ['Core CS & OS', 'System Design', 'Data Structures', 'Fullstack Web'],
+    questQuestion: '"Can you explain deadlock prevention in just 2 simple sentences?"',
+    concepts: [
+      {
+        id: 'c1',
+        title: 'Event Loop in Node.js',
+        category: 'Core CS & OS',
+        desc: 'Call stack, Libuv thread pool & callbacks',
+        xp: '+50 XP',
+        icon: RotateCcw,
+        analogy:
+          'Like a head chef in a busy pizzeria 👨‍🍳. While heavy pizzas bake in the oven (Libuv thread pool), the chef keeps taking counter orders. When ready, the timer rings (callback queue), and the chef serves the pizza immediately!',
+        steps: [
+          'Call Stack: Synchronous execution runs top to bottom',
+          'Libuv Thread Pool: Async I/O (file, network) handed off to 4 background threads',
+          'Event Queue: Completed callbacks wait in queue',
+          'Event Loop: Continuously pushes waiting callbacks onto empty stack',
+        ],
+      },
+      {
+        id: 'c2',
+        title: 'Microservices vs Monolith',
+        category: 'System Design',
+        desc: 'Scalability, blast radius & latency trade-offs',
+        xp: '+40 XP',
+        icon: Layers,
+        analogy:
+          'A monolith is like a Swiss Army knife 🔪 (convenient but breaks all at once), while microservices are a modular toolset (each tool independently upgraded or replaced).',
+        steps: [
+          'Single Codebase: Fast deployment for small teams',
+          'Service Boundaries: Domain-Driven Design (DDD) separates databases',
+          'API Gateway: Routes client requests and terminates SSL/Auth',
+          'Resilience: Bulkheads and circuit breakers prevent cascade failures',
+        ],
+      },
+      {
+        id: 'c3',
+        title: 'Database Indexing (B-Trees)',
+        category: 'Data Structures',
+        desc: 'Lookups, disk page I/O & balanced trees',
+        xp: '+35 XP',
+        icon: Database,
+        analogy:
+          'Like the thumb index at the edge of a giant printed encyclopedia 📖. Allows you to jump straight to the right section without flipping through every single page sequentially.',
+        steps: [
+          'Sequential Scan: O(N) requires reading every disk block',
+          'B-Tree Search: O(log N) balanced multi-way tree keeps heights small (usually 3-4 levels)',
+          'Composite Index: Left-most prefix rule governs query optimization',
+        ],
+      },
+      {
+        id: 'c4',
+        title: 'JWT & Session Security',
+        category: 'Fullstack Web',
+        desc: 'Stateless auth, claims & CSRF protection',
+        xp: '+30 XP',
+        icon: Globe,
+        analogy:
+          'A digital wristband at an amusement park 🎟️. Encrypted signature verifies your tier access at every ride without the operator calling headquarters each time.',
+        steps: [
+          'Header & Payload: Base64Url-encoded metadata & user identity claims',
+          'Cryptographic Signature: HMAC-SHA256 ensures payload was not tampered with',
+          'Storage: HttpOnly SameSite cookies protect against XSS stealing tokens',
+        ],
+      },
     ],
   },
-  {
-    id: 'c2',
-    title: 'Microservices vs Monolith',
-    category: 'System Design',
-    desc: 'Scalability, blast radius & latency trade-offs',
-    xp: '+40 XP',
-    icon: Layers,
-    analogy:
-      'A monolith is like a Swiss Army knife 🔪 (convenient but breaks all at once), while microservices are a modular toolset (each tool independently upgraded or replaced).',
-    steps: [
-      'Single Codebase: Fast deployment for small teams',
-      'Service Boundaries: Domain-Driven Design (DDD) separates databases',
-      'API Gateway: Routes client requests and terminates SSL/Auth',
-      'Resilience: Bulkheads and circuit breakers prevent cascade failures',
+  ECE: {
+    categories: ['VLSI & Digital', 'Embedded & RTOS', 'Protocols & Busses', 'Hardware & PCB'],
+    questQuestion: '"Why is a 2-flip-flop synchronizer essential to mitigate metastability in Clock Domain Crossing?"',
+    concepts: [
+      {
+        id: 'ece-c1',
+        title: 'Clock Domain Crossing (CDC) & Metastability',
+        category: 'VLSI & Digital',
+        desc: 'Setup/hold slack, MTBF & synchronizers',
+        xp: '+50 XP',
+        icon: Cpu,
+        analogy:
+          'Like trying to jump onto a spinning carousel 🎠 from a stationary platform. If you jump right as a bar sweeps past, you might stumble in an indeterminate state (metastability) before recovering your balance.',
+        steps: [
+          'Asynchronous Boundary: Signals originating in Domain A arrive arbitrary to Domain B clock edge',
+          'Metastability Risk: Setup/hold window violated, output oscillates between 0 and 1',
+          '2-FF Synchronizer: First flop catches signal, second flop resolves metastable output into valid digital state',
+          'MTBF Calculation: Mean Time Between Failures increased from microseconds to centuries',
+        ],
+      },
+      {
+        id: 'ece-c2',
+        title: 'Priority Inversion in FreeRTOS',
+        category: 'Embedded & RTOS',
+        desc: 'Semaphores, priority inheritance & task starving',
+        xp: '+45 XP',
+        icon: Activity,
+        analogy:
+          'Like an ambulance (high priority) stuck behind a delivery van (medium priority), because a slow tractor (low priority) is blocking the one-lane bridge that the ambulance needs.',
+        steps: [
+          'Low-priority task acquires shared mutex/resource',
+          'High-priority task preempts and requests the same mutex, entering blocked state',
+          'Medium-priority task preempts low-priority task, inadvertently starving the high-priority task',
+          'Priority Inheritance: Low-priority task temporarily elevated to high-priority until mutex is released',
+        ],
+      },
+      {
+        id: 'ece-c3',
+        title: 'I2C vs SPI Bus Protocols',
+        category: 'Protocols & Busses',
+        desc: 'Speed, wire count, arbitration & addressing',
+        xp: '+40 XP',
+        icon: Radio,
+        analogy:
+          'I2C is like a group walkie-talkie channel 📻 (only 2 wires, everyone shares and takes turns calling addresses), while SPI is a private direct telephone line ☎️ (faster, but requires separate chip-select lines for each device).',
+        steps: [
+          'I2C: 2 wires (SDA, SCL), open-drain with pull-ups, 7/10-bit software addressing up to 3.4 Mbps',
+          'SPI: 4 wires (MOSI, MISO, SCK, CS), full-duplex push-pull, speeds exceeding 50 MHz',
+          'Trade-off: I2C saves pins on constrained MCUs; SPI provides max throughput for sensors/displays',
+        ],
+      },
     ],
   },
-  {
-    id: 'c3',
-    title: 'Database Indexing (B-Trees)',
-    category: 'Data Structures',
-    desc: 'Lookups, disk page I/O & balanced trees',
-    xp: '+35 XP',
-    icon: Database,
-    analogy:
-      'Like the thumb index at the edge of a giant printed encyclopedia 📖. Allows you to jump straight to the right section without flipping through every single page sequentially.',
-    steps: [
-      'Sequential Scan: O(N) requires reading every disk block',
-      'B-Tree Search: O(log N) balanced multi-way tree keeps heights small (usually 3-4 levels)',
-      'Composite Index: Left-most prefix rule governs query optimization',
+  MECH: {
+    categories: ['GD&T & Design', 'CAE & FEA', 'Manufacturing & CNC', 'Thermal & Fluids'],
+    questQuestion: '"Why does Von Mises stress criteria govern ductile yield failure over maximum principal stress?"',
+    concepts: [
+      {
+        id: 'mech-c1',
+        title: 'Maximum Material Condition (MMC) in GD&T',
+        category: 'GD&T & Design',
+        desc: 'Bonus tolerance, pin/hole fit & ASME Y14.5',
+        xp: '+50 XP',
+        icon: Wrench,
+        analogy:
+          'Like fitting a suitcase into an airline baggage check frame 🧳. If your suitcase is packed slightly smaller than maximum size, you get "bonus flexibility" in how you tilt or angle it through the slot.',
+        steps: [
+          'MMC Definition: Feature contains maximum volume of material (largest pin or smallest hole)',
+          'Bonus Tolerance: As manufactured size departs from MMC towards LMC, geometric tolerance increases',
+          'Functional Gauging: Hard physical gauges can verify parts quickly on the assembly line',
+        ],
+      },
+      {
+        id: 'mech-c2',
+        title: 'Von Mises Yield Criterion in FEA',
+        category: 'CAE & FEA',
+        desc: 'Distortion energy, shear yield & safety factor',
+        xp: '+45 XP',
+        icon: Flame,
+        analogy:
+          'Like inflating a balloon under water 🎈. Pure uniform hydrostatic pressure compresses the balloon without popping it; it is shear distortion that stretches the rubber until it yields.',
+        steps: [
+          'Hydrostatic vs Deviatoric Stress: Hydrostatic changes volume; deviatoric causes shear deformation',
+          'Distortion Energy Theory: Yielding begins when distortion energy reaches yield strength in simple tension',
+          'Validation: Accurately predicts failure in ductile structural steels, aluminum, and titanium',
+        ],
+      },
+      {
+        id: 'mech-c3',
+        title: 'Adaptive Clearing in CNC Machining',
+        category: 'Manufacturing & CNC',
+        desc: 'Constant tool engagement, chip thinning & CAM',
+        xp: '+40 XP',
+        icon: Layers,
+        analogy:
+          'Like peeling an apple with uniform gentle blade pressure 🍏 instead of jamming the knife into tight corners and snapping the tip.',
+        steps: [
+          'Constant Radial Engagement: Tool never exceeds set engagement angle (e.g. 15-20%)',
+          'High Feed Rates & Full Flute Depth: Spreads heat and wear over the entire cutter length',
+          'Cycle Time Reduction: Eliminates sudden shock loads in internal pocket corners',
+        ],
+      },
     ],
   },
-  {
-    id: 'c4',
-    title: 'JWT & Session Security',
-    category: 'Fullstack Web',
-    desc: 'Stateless auth, claims & CSRF protection',
-    xp: '+30 XP',
-    icon: Globe,
-    analogy:
-      'A digital wristband at an amusement park 🎟️. Encrypted signature verifies your tier access at every ride without the operator calling headquarters each time.',
-    steps: [
-      'Header & Payload: Base64Url-encoded metadata & user identity claims',
-      'Cryptographic Signature: HMAC-SHA256 ensures payload was not tampered with',
-      'Storage: HttpOnly SameSite cookies protect against XSS stealing tokens',
+  EEE: {
+    categories: ['Power Electronics', 'Motor Drives & FOC', 'PLC & Automation', 'EV & Batteries'],
+    questQuestion: '"How do SiC MOSFETs reduce switching losses compared to Silicon IGBTs in 800V EV traction?"',
+    concepts: [
+      {
+        id: 'eee-c1',
+        title: 'Field-Oriented Control (FOC) in Motors',
+        category: 'Motor Drives & FOC',
+        desc: 'Clarke/Park transforms, torque & flux control',
+        xp: '+50 XP',
+        icon: Zap,
+        analogy:
+          'Like riding a tandem bicycle 🚲 where you keep your foot pushing perpendicular to the pedals at all times to extract 100% mechanical torque without wasting effort pushing down on dead center.',
+        steps: [
+          'Clarke Transform: Converts 3-phase stator currents (Ia, Ib, Ic) into 2-phase stationary frame (Ialpha, Ibeta)',
+          'Park Transform: Rotates into rotor reference frame (Id, Iq) using rotor encoder angle theta',
+          'Decoupled Control: Iq directly controls motor torque, Id controls magnetic field flux',
+          'Inverse Transforms & SVPWM: Generate gate drive PWM pulses for the 3-phase inverter',
+        ],
+      },
+      {
+        id: 'eee-c2',
+        title: 'DC-DC Buck-Boost Dynamics',
+        category: 'Power Electronics',
+        desc: 'CCM/DCM, inductor sizing & duty cycle',
+        xp: '+45 XP',
+        icon: Activity,
+        analogy:
+          'Like a hydraulic hand pump 🚰. When you draw the lever up, you store energy in the chamber (inductor charge); when you push down, you discharge that energy into the tank (output capacitor) at any desired pressure.',
+        steps: [
+          'Switch ON: Inductor energizes from DC input, diode reverse biased, capacitor feeds load',
+          'Switch OFF: Inductor magnetic field collapses, forward-biasing diode to transfer stored energy',
+          'Voltage Conversion Ratio: Vout = Vin * (D / (1 - D)), allowing stepping up or down',
+        ],
+      },
+      {
+        id: 'eee-c3',
+        title: 'Li-ion Battery Cell Balancing',
+        category: 'EV & Batteries',
+        desc: 'Passive bleed vs active shuttle & BMS',
+        xp: '+40 XP',
+        icon: Bolt,
+        analogy:
+          'Like filling a chain of drinking glasses connected by siphons 🥛. If one glass fills faster, passive balancing bleeds off the excess through a tiny spigot so the others can reach full without overflowing.',
+        steps: [
+          'Cell Imbalance Cause: Manufacturing variances in internal resistance and degradation rates',
+          'Passive Balancing: Bleed resistors discharge highest-voltage cells during the final CV charging phase',
+          'Active Balancing: Capacitive or inductive shuttles transfer excess energy from high to low cells with >90% efficiency',
+        ],
+      },
     ],
   },
-];
+  CIVIL: {
+    categories: ['Structural & IS 456', 'BIM & Coordination', 'Project Planning', 'Geotech & Soil'],
+    questQuestion: '"What is the difference between one-way and two-way slab load distribution per IS 456:2000?"',
+    concepts: [
+      {
+        id: 'civil-c1',
+        title: 'Limit State Method vs Working Stress',
+        category: 'Structural & IS 456',
+        desc: 'Partial safety factors, serviceability & IS 456',
+        xp: '+50 XP',
+        icon: Building,
+        analogy:
+          'Working Stress is like driving with a strict arbitrary speed governor 🚗 (safe but excessively heavy and expensive), while Limit State tests the true breaking point of each material and applies scientifically calculated safety cushions.',
+        steps: [
+          'Limit State of Collapse: Flexure, shear, compression, and torsion with load factors (1.5 for DL + LL)',
+          'Limit State of Serviceability: Deflection, crack width, and vibration under normal operating conditions',
+          'Material Factors: Partial safety factor gamma_m = 1.5 for concrete and 1.15 for high-yield steel',
+        ],
+      },
+      {
+        id: 'civil-c2',
+        title: 'Clash Detection Matrices in BIM',
+        category: 'BIM & Coordination',
+        desc: 'Hard clashes, clearances & Navisworks Manage',
+        xp: '+45 XP',
+        icon: Layers,
+        analogy:
+          'Like an airport air traffic control radar ✈️. Before planes take off, radar checks 3D corridors to guarantee a plumbing pipe doesn’t fly straight through a structural concrete shear wall.',
+        steps: [
+          'Model Federation: Architectural, Structural, and MEP IFC/RVT models merged in Navisworks',
+          'Hard Clash: Physical geometric intersection (e.g. 300mm HVAC duct intersecting concrete beam)',
+          'Soft / Clearance Clash: Insufficient space for insulation, maintenance access, or thermal expansion',
+          'Clash Resolution Report: Assigned to discipline lead with grid coordinates and timestamp for signoff',
+        ],
+      },
+      {
+        id: 'civil-c3',
+        title: 'Critical Path Method (CPM) & Float',
+        category: 'Project Planning',
+        desc: 'WBS, Total Float vs Free Float & Primavera P6',
+        xp: '+40 XP',
+        icon: Compass,
+        analogy:
+          'Like baking a wedding cake 🎂. The sponge baking and cooling is on the critical path (any delay pushes back the entire wedding); folding napkins has 3 hours of "Total Float" and won’t delay the reception.',
+        steps: [
+          'Forward Pass: Computes Early Start (ES) and Early Finish (EF) of all activities',
+          'Backward Pass: Computes Late Start (LS) and Late Finish (LF) based on project deadline',
+          'Total Float = LS - ES: Slack time without delaying overall project delivery date',
+          'Critical Path: Sequence of connected activities where Total Float equals zero',
+        ],
+      },
+    ],
+  },
+};
 
 export default function LearningPage() {
-  const [activeCategory, setActiveCategory] = useState('Core CS & OS');
-  const [activeConcept, setActiveConcept] = useState<Concept>(CONCEPTS[0]);
+  const { user, studentBranch } = useAuth();
+  const branchKey = BRANCH_LEARNING_DATA[studentBranch] ? studentBranch : 'CSE';
+  const branchData = useMemo(() => BRANCH_LEARNING_DATA[branchKey], [branchKey]);
+
+  const [activeCategory, setActiveCategory] = useState(branchData.categories[0]);
+  const [activeConcept, setActiveConcept] = useState<Concept>(branchData.concepts[0]);
   const [simStep, setSimStep] = useState(0);
   const [chatInput, setChatInput] = useState('');
   const [messages, setMessages] = useState<
     Array<{ sender: 'ai' | 'user'; text: string; time: string }>
-  >([
-    {
-      sender: 'ai',
-      text: "Hello Arjun! 🤖 I'm your AI Learning Coach. What concept or technology would you like to explore today? Tap any topic on the left or type below!",
-      time: '10:42 AM',
-    },
-    {
-      sender: 'user',
-      text: 'Can you explain the event loop in Node.js in simple terms with an example?',
-      time: '10:43 AM',
-    },
-    {
-      sender: 'ai',
-      text: CONCEPTS[0].analogy,
-      time: '10:44 AM',
-    },
-  ]);
+  >([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Sync concepts & categories when student switches branch
+  useEffect(() => {
+    setActiveCategory(branchData.categories[0]);
+    setActiveConcept(branchData.concepts[0]);
+    setSimStep(0);
+    const firstName = user?.name?.split(' ')[0] || 'Student';
+    setMessages([
+      {
+        sender: 'ai',
+        text: `Hello ${firstName}! 🤖 I'm your AI Learning Coach for ${studentBranch} Engineering. What core topic or interview concept would you like to explore today? Tap any topic on the left or type below!`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      },
+      {
+        sender: 'user',
+        text: `Can you explain ${branchData.concepts[0].title} in simple terms with an example?`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      },
+      {
+        sender: 'ai',
+        text: branchData.concepts[0].analogy,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      },
+    ]);
+  }, [studentBranch, branchData, user]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -195,7 +437,7 @@ export default function LearningPage() {
               </span>
             </div>
             <p className="text-xs sm:text-sm text-[#4B4731] font-medium max-w-2xl leading-relaxed">
-              Ask doubts, unlock live visual concept simulators, and crack complex CS engineering interviews with Pal-Bot!
+              Ask doubts, unlock live visual concept simulators, and crack complex {studentBranch} engineering interviews with Pal-Bot!
             </p>
           </div>
         </div>
@@ -223,15 +465,15 @@ export default function LearningPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-[#6A5F00] font-heading font-bold text-base">
                 <Sparkles className="h-4 w-4" />
-                <span>Concept Orbit</span>
+                <span>Concept Orbit ({studentBranch})</span>
               </div>
               <span className="text-[11px] font-bold bg-[#FAF3DF] px-2.5 py-0.5 rounded-full text-[#4B4731]">
-                {CONCEPTS.length} Topics
+                {branchData.concepts.length} Topics
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              {['Core CS & OS', 'System Design', 'Data Structures', 'Fullstack Web'].map((cat) => (
+              {branchData.categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
@@ -248,7 +490,7 @@ export default function LearningPage() {
 
             {/* Quick Starter Cards */}
             <div className="flex flex-col gap-2 mt-2">
-              {CONCEPTS.map((c) => {
+              {branchData.concepts.map((c) => {
                 const isSelected = activeConcept.id === c.id;
                 const IconComp = c.icon;
                 return (
@@ -286,12 +528,12 @@ export default function LearningPage() {
               <span className="font-heading text-sm font-black">Daily Curiosity Quest</span>
             </div>
             <p className="text-xs font-semibold leading-relaxed">
-              "Can you explain <strong>deadlock prevention</strong> in just 2 simple sentences?"
+              {branchData.questQuestion}
             </p>
             <div className="flex items-center justify-between bg-white/90 backdrop-blur p-2 rounded-full pl-3.5 shadow-sm">
               <span className="text-xs font-bold text-[#006B5B]">Reward: +50 XP 🏆</span>
               <button
-                onClick={() => showToast('Deadlock Quest accepted! Answer in chat.')}
+                onClick={() => showToast('Curiosity Quest accepted! Answer in chat.')}
                 className="bg-[#1A1A1A] hover:bg-black text-white text-xs font-bold px-3.5 py-1.5 rounded-full transition-transform active:scale-95 shadow-sm"
               >
                 Accept Quest

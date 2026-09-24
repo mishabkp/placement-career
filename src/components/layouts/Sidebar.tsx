@@ -177,7 +177,7 @@ function NavItemLink({
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const { user, isFaculty, studentBranch } = useAuth();
+  const { user, isFaculty, studentBranch, loginedAsAdmin, switchRole } = useAuth();
 
   const currentNavGroups = isFaculty ? facultyNavGroups : getStudentNavGroups(studentBranch);
 

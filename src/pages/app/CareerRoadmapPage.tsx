@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { PageHeader } from '../../components/shared/PageHeader';
+import { useAuth } from '../../context/AuthContext';
 import {
   Map,
   CheckCircle2,
@@ -29,10 +30,40 @@ import {
   type Milestone,
 } from '../../data/roadmapTracks';
 
+const DEFAULT_BRANCH_TRACKS: Record<string, string> = {
+  CSE: 'frontend',
+  ECE: 'ece_vlsi',
+  MECH: 'mech_cad',
+  EEE: 'eee_ev',
+  CIVIL: 'civil_structural',
+};
+
+const BRANCH_TARGET_ROLES: Record<string, string[]> = {
+  CSE: ['Senior Frontend Engineer', 'Backend & Cloud Architect', 'Fullstack MERN Engineer', 'DevOps & SRE Specialist'],
+  ECE: ['VLSI & ASIC Design Engineer', 'Embedded Systems Firmware Engineer', 'IoT Solutions Architect', 'PCB Hardware Engineer'],
+  MECH: ['CAD/CAM Product Design Engineer', 'CAE & FEA Simulation Engineer', 'Robotics & Automation Specialist', 'Manufacturing Process Engineer'],
+  EEE: ['EV Powertrain Engineer', 'Power Electronics Design Specialist', 'Industrial Automation & PLC Engineer', 'Renewable Energy Systems Engineer'],
+  CIVIL: ['Structural Analysis & Design Engineer', 'BIM Coordinator & 3D Modeler', 'Primavera P6 Construction Planner', 'Geotechnical & Highway Engineer'],
+};
+
 export default function CareerRoadmapPage() {
+  const { studentBranch } = useAuth();
   const [tracks, setTracks] = useState<CareerTrack[]>(CAREER_TRACKS);
-  const [selectedTrackId, setSelectedTrackId] = useState<string>('frontend');
+  const [branchFilter, setBranchFilter] = useState<string>(studentBranch || 'ALL');
+  const [selectedTrackId, setSelectedTrackId] = useState<string>(
+    () => DEFAULT_BRANCH_TRACKS[studentBranch] || 'frontend'
+  );
   const [filter, setFilter] = useState<'all' | 'in-progress'>('all');
+
+  // Sync selected track when student switches branch in Header
+  useEffect(() => {
+    if (studentBranch && DEFAULT_BRANCH_TRACKS[studentBranch]) {
+      setSelectedTrackId(DEFAULT_BRANCH_TRACKS[studentBranch]);
+      setBranchFilter(studentBranch);
+      const defaultRole = BRANCH_TARGET_ROLES[studentBranch]?.[0] || 'Senior Engineer';
+      setTargetRole(defaultRole);
+    }
+  }, [studentBranch]);
   
   // Modals & Drawers
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
@@ -46,7 +77,9 @@ export default function CareerRoadmapPage() {
   const [quizScore, setQuizScore] = useState(0);
 
   // Customize Role Preferences
-  const [targetRole, setTargetRole] = useState('Senior Frontend Engineer');
+  const [targetRole, setTargetRole] = useState(
+    () => BRANCH_TARGET_ROLES[studentBranch]?.[0] || 'Senior Frontend Engineer'
+  );
   const selectedStack = 'React / Next.js';
   const [weeklyHours, setWeeklyHours] = useState('10 hrs/week');
 
@@ -209,25 +242,65 @@ export default function CareerRoadmapPage() {
         }
       />
 
-      {/* ─── 1. CAREER TRACK SWITCHER TABS ─── */}
-      <div className="flex items-center gap-3 overflow-x-auto pb-1 max-w-full">
-        {tracks.map((t) => {
-          const isSelected = t.id === selectedTrackId;
-          return (
-            <button
-              key={t.id}
-              onClick={() => setSelectedTrackId(t.id)}
-              className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap active:scale-95 cursor-pointer flex items-center gap-2 border ${
-                isSelected
-                  ? 'bg-[#1A1A1A] text-[#FFE600] border-[#FFE600]/50 shadow-md ring-2 ring-[#FFE600]/30'
-                  : 'bg-[#F4EEDA] hover:bg-[#EEE8D4] text-[#1E1C10] border-[#CDC7AA]/40'
-              }`}
-            >
-              <Code2 className="h-4 w-4" />
-              <span>{t.title}</span>
-            </button>
-          );
-        })}
+      {/* ─── 1. CAREER TRACK SWITCHER & BRANCH TABS ─── */}
+      <div className="space-y-3">
+        {/* Branch Filter Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          <span className="text-xs font-extrabold text-[#7C775F] uppercase tracking-wider mr-1 shrink-0">
+            Branch:
+          </span>
+          {[
+            { id: studentBranch, label: `My Branch (${studentBranch})` },
+            { id: 'ALL', label: 'All Tracks' },
+            { id: 'CSE', label: 'CSE' },
+            { id: 'ECE', label: 'ECE' },
+            { id: 'MECH', label: 'MECH' },
+            { id: 'EEE', label: 'EEE' },
+            { id: 'CIVIL', label: 'CIVIL' },
+          ].map((tab) => {
+            const isActive = branchFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setBranchFilter(tab.id)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  isActive
+                    ? 'bg-[#6A5F00] text-white shadow-md'
+                    : 'bg-[#F4EEDA] text-[#4B4731] hover:bg-[#EEE8D4]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Available Tracks in selected branch filter */}
+        <div className="flex items-center gap-3 overflow-x-auto pb-1 max-w-full">
+          {tracks
+            .filter((t) => branchFilter === 'ALL' || t.branch === branchFilter)
+            .map((t) => {
+              const isSelected = t.id === selectedTrackId;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setSelectedTrackId(t.id)}
+                  className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap active:scale-95 cursor-pointer flex items-center gap-2 border ${
+                    isSelected
+                      ? 'bg-[#1A1A1A] text-[#FFE600] border-[#FFE600]/50 shadow-md ring-2 ring-[#FFE600]/30'
+                      : 'bg-[#F4EEDA] hover:bg-[#EEE8D4] text-[#1E1C10] border-[#CDC7AA]/40'
+                  }`}
+                >
+                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${
+                    isSelected ? 'bg-[#FFE600] text-[#1A1A1A]' : 'bg-[#CDC7AA]/40 text-[#4B4731]'
+                  }`}>
+                    {t.branch}
+                  </span>
+                  <span>{t.title}</span>
+                </button>
+              );
+            })}
+        </div>
       </div>
 
       {/* ─── 2. HERO WELCOME BANNER ─── */}
@@ -867,6 +940,19 @@ export default function CareerRoadmapPage() {
                 onChange={(e) => setTargetRole(e.target.value)}
                 className="bg-[#F4EEDA] border-2 border-[#CDC7AA] rounded-full px-4 py-2.5 text-xs text-[#1E1C10] focus:outline-none focus:border-[#6A5F00] transition-all font-semibold"
               />
+              {/* Branch-tailored role recommendations */}
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {(BRANCH_TARGET_ROLES[studentBranch] || BRANCH_TARGET_ROLES.CSE).map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => setTargetRole(role)}
+                    className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white border border-[#CDC7AA]/50 hover:bg-[#FFE600] text-[#1E1C10] transition-colors cursor-pointer"
+                  >
+                    + {role}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -877,13 +963,16 @@ export default function CareerRoadmapPage() {
                     key={t.id}
                     type="button"
                     onClick={() => setSelectedTrackId(t.id)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold cursor-pointer transition-all ${
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 ${
                       selectedTrackId === t.id
-                        ? 'bg-[#FFE600] text-[#726600] shadow-sm'
+                        ? 'bg-[#FFE600] text-[#726600] shadow-sm ring-1 ring-[#6A5F00]/30'
                         : 'bg-[#F4EEDA] hover:bg-[#EEE8D4] text-[#1E1C10]'
                     }`}
                   >
-                    {t.title.split(' Track')[0]}
+                    <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-[#1A1A1A]/10 uppercase">
+                      {t.branch}
+                    </span>
+                    <span>{t.title.split(' Track')[0]}</span>
                   </button>
                 ))}
               </div>
