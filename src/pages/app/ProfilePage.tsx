@@ -1,21 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import {
-  SmartToy,
-  Verified,
-  CheckCircle2,
-} from '../../components/icons/StitchIcons';
+import { SmartToy, Verified } from '../../components/icons/StitchIcons';
 import {
   Eye,
   Save,
   Camera,
-  School,
-  Terminal,
-  MapPin,
   Star,
-  Clock,
-  Sparkles,
-  Award,
   User,
   Mail,
   Phone,
@@ -26,14 +16,13 @@ import {
   Plus,
   X,
   Briefcase,
-  Quote,
   Wand2,
   AlertCircle,
+  CheckCircle,
 } from 'lucide-react';
 
 interface BranchProfileConfig {
   degree: string;
-  department: string;
   rollNo: string;
   trackBadge: string;
   targetRole: string;
@@ -44,87 +33,88 @@ interface BranchProfileConfig {
 const BRANCH_PROFILE_DATA: Record<string, BranchProfileConfig> = {
   CSE: {
     degree: 'B.Tech Computer Science & Engineering',
-    department: 'Computer Science & Engineering',
     rollNo: 'B220541CS',
     trackBadge: 'Full-Stack Track',
     targetRole: 'Full Stack Software Engineer',
     defaultBio:
-      'B.Tech CSE student at NIT Calicut, passionate about full-stack development, distributed systems, and open source. Currently exploring React, Node.js, and cloud architectures.',
+      'B.Tech CSE student at NIT Calicut, passionate about full-stack development and open source. Exploring React, Node.js, and cloud architectures.',
     polishedBio:
-      'Final-year Computer Science student at NIT Calicut specializing in modern web ecosystems, scalable backend microservices, and reactive UIs. Driven by engineering rigorous full-stack solutions.',
+      'Final-year CS student at NIT Calicut specializing in modern web ecosystems, scalable backend microservices, and reactive UIs.',
   },
   ECE: {
     degree: 'B.Tech Electronics & Communication Engineering',
-    department: 'Electronics & Communication Engineering',
     rollNo: 'B220412EC',
     trackBadge: 'VLSI & Embedded Track',
     targetRole: 'VLSI & Embedded Firmware Engineer',
     defaultBio:
-      'B.Tech ECE student at NIT Calicut, passionate about digital VLSI design, embedded firmware, and real-time operating systems. Experienced with Verilog, STM32, and FreeRTOS.',
+      'B.Tech ECE student at NIT Calicut, passionate about digital VLSI design and embedded firmware. Experienced with Verilog, STM32, and FreeRTOS.',
     polishedBio:
-      'Final-year Electronics & Communication student at NIT Calicut specializing in RTL synthesis, digital logic verification, and low-power embedded firmware for ARM Cortex architectures.',
+      'Final-year ECE student at NIT Calicut specializing in RTL synthesis, digital logic verification, and low-power embedded firmware.',
   },
   MECH: {
     degree: 'B.Tech Mechanical Engineering',
-    department: 'Mechanical Engineering',
     rollNo: 'B220308ME',
     trackBadge: 'CAD/CAM & FEA Track',
     targetRole: 'CAD/CAM & Mechanical Design Engineer',
     defaultBio:
-      'B.Tech Mechanical Engineering student at NIT Calicut, specializing in 3D CAD modeling, FEA structural simulation, and GD&T. Experienced with SolidWorks, ANSYS, and Fusion 360 CAM.',
+      'B.Tech Mechanical student at NIT Calicut, specializing in 3D CAD modeling, FEA simulation, and GD&T.',
     polishedBio:
-      'Final-year Mechanical Engineering student at NIT Calicut with deep proficiency in parametric 3D CAD modeling, nonlinear FEA stress simulations, and ASME Y14.5 GD&T standards.',
+      'Final-year Mech student at NIT Calicut with proficiency in parametric 3D CAD, nonlinear FEA simulations, and ASME Y14.5 standards.',
   },
   EEE: {
     degree: 'B.Tech Electrical & Electronics Engineering',
-    department: 'Electrical & Electronics Engineering',
     rollNo: 'B220215EE',
     trackBadge: 'EV & Power Systems Track',
     targetRole: 'EV Powertrain & Power Electronics Engineer',
     defaultBio:
-      'B.Tech EEE student at NIT Calicut, passionate about electric vehicle powertrains, motor drives (FOC), and power electronics converters. Experienced with MATLAB Simulink and industrial PLCs.',
+      'B.Tech EEE student at NIT Calicut, passionate about EV powertrains and power electronics converters.',
     polishedBio:
-      'Final-year Electrical Engineering student at NIT Calicut specializing in EV powertrain design, high-frequency DC-DC converters, Field-Oriented Control (FOC), and smart battery management.',
+      'Final-year EE student at NIT Calicut specializing in EV powertrain design, DC-DC converters, and Field-Oriented Control.',
   },
   CIVIL: {
     degree: 'B.Tech Civil Engineering',
-    department: 'Civil Engineering',
     rollNo: 'B220104CE',
     trackBadge: 'Structural BIM Track',
     targetRole: 'Structural Analysis & BIM Engineer',
     defaultBio:
-      'B.Tech Civil Engineering student at NIT Calicut, specializing in structural analysis (IS 456), Revit BIM modeling, and Primavera P6 project management. Focused on resilient infrastructure.',
+      'B.Tech Civil student at NIT Calicut, specializing in structural analysis (IS 456), Revit BIM, and Primavera P6.',
     polishedBio:
-      'Final-year Civil Engineering student at NIT Calicut proficient in limit state structural design per IS codes, 3D BIM coordination in Autodesk Revit/Navisworks, and CPM project controls.',
+      'Final-year Civil student at NIT Calicut proficient in limit state design, 3D BIM coordination in Revit/Navisworks, and CPM project controls.',
   },
 };
 
+const PROFILE_COMPLETIONS = [
+  { label: 'Basic Details', done: true },
+  { label: 'Academics', done: true },
+  { label: 'Resume / Projects', done: false },
+  { label: 'LinkedIn / Socials', done: false },
+];
+
 export default function ProfilePage() {
   const { user, studentBranch } = useAuth();
-  const profileConfig = BRANCH_PROFILE_DATA[studentBranch] || BRANCH_PROFILE_DATA.CSE;
+  const profileConfig =
+    BRANCH_PROFILE_DATA[studentBranch] || BRANCH_PROFILE_DATA.CSE;
 
   const [name, setName] = useState(() => user?.name || 'Arjun Menon');
-  const [email, setEmail] = useState(() => user?.email || 'arjun.menon@example.com');
+  const [email, setEmail] = useState(
+    () => user?.email || 'arjun.menon@example.com'
+  );
   const [phone, setPhone] = useState('+91 98470 12345');
   const [college, setCollege] = useState(() => user?.college || 'NIT Calicut');
   const [degree, setDegree] = useState(profileConfig.degree);
   const [rollNo, setRollNo] = useState(profileConfig.rollNo);
   const [gradYear, setGradYear] = useState('2026');
   const [cgpa, setCgpa] = useState('8.6 / 10.0');
-
-  // Bio & AI Polish
   const [bio, setBio] = useState(profileConfig.defaultBio);
   const [isPolishing, setIsPolishing] = useState(false);
-
-  // Target Roles & CTC
   const [targetRole, setTargetRole] = useState(profileConfig.targetRole);
   const [ctcValue, setCtcValue] = useState(12);
-  const [locations, setLocations] = useState(['Bangalore', 'Kochi', 'Remote / Hybrid']);
+  const [locations, setLocations] = useState(['Bangalore', 'Kochi', 'Remote']);
   const [newCity, setNewCity] = useState('');
   const [showAddCity, setShowAddCity] = useState(false);
   const [openToInternship, setOpenToInternship] = useState(true);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Synchronize with active student branch
   useEffect(() => {
     setDegree(profileConfig.degree);
     setRollNo(profileConfig.rollNo);
@@ -135,580 +125,462 @@ export default function ProfilePage() {
     if (user?.college) setCollege(user.college);
   }, [studentBranch, profileConfig, user]);
 
-  // Toast
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const handleSave = () => {
-    showToast('🎉 Profile changes saved successfully!');
-  };
+  const handleSave = () => showToast('Profile saved successfully!');
 
   const handleAiPolish = () => {
     setIsPolishing(true);
     setTimeout(() => {
       setBio(profileConfig.polishedBio);
       setIsPolishing(false);
-      showToast(`🪄 ${studentBranch} Bio polished with Pal-Bot AI!`);
+      showToast('Bio polished with AI!');
     }, 850);
   };
 
-  const handleRemoveLocation = (loc: string) => {
-    setLocations((prev) => prev.filter((l) => l !== loc));
-  };
+  const completedItems = PROFILE_COMPLETIONS.filter((i) => i.done).length;
+  const strengthPercent = Math.round(
+    (completedItems / PROFILE_COMPLETIONS.length) * 100
+  );
 
-  const handleAddLocation = () => {
-    const trimmed = newCity.trim();
-    if (trimmed && !locations.includes(trimmed)) {
-      setLocations((prev) => [...prev, trimmed]);
-      setNewCity('');
-      setShowAddCity(false);
-      showToast(`📍 Added ${trimmed} to preferred locations`);
-    }
-  };
+  const inputCls =
+    'w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#FAF3DF]/70 text-[#1E1C10] font-medium text-sm border border-[#CDC7AA]/40 focus:bg-white focus:border-[#6A5F00] outline-none transition-colors';
 
   return (
-    <div className="space-y-8 pb-16 w-full font-sans text-[#1E1C10]">
-      {/* Toast Notification */}
+    <div className="space-y-5 pb-16 w-full font-sans text-[#1E1C10]">
+      {/* Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#1A1A1A] text-[#FFE600] px-5 py-3.5 rounded-2xl shadow-2xl border border-[#FFE600]/40 flex items-center gap-3 animate-bounce">
-          <SmartToy className="h-5 w-5 text-[#FFE600]" />
-          <span className="text-xs sm:text-sm font-bold text-white">{toastMessage}</span>
+        <div className="fixed bottom-6 right-6 z-50 bg-[#1A1A1A] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce border border-[#FFE600]/40">
+          <SmartToy className="h-4 w-4 text-[#FFE600]" />
+          <span className="text-sm font-bold">{toastMessage}</span>
         </div>
       )}
 
-      {/* ─── Top Banner / Header Bar ─── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 sm:p-7 rounded-3xl shadow-sm border border-[#CDC7AA]/40 relative overflow-hidden">
-        <div className="absolute -right-12 -top-12 w-48 h-48 rounded-full bg-[#FFE600]/20 pointer-events-none blur-2xl" />
-
-        <div className="flex items-center gap-4 z-10">
-          <div className="relative w-16 h-16 rounded-2xl bg-[#FFE600] flex items-center justify-center text-[#1A1A1A] shadow-md border border-[#CDC7AA]/40 transition-transform hover:scale-105">
-            <SmartToy className="h-9 w-9 text-[#1A1A1A]" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#00F5D4] rounded-full border-2 border-white shadow-xs" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="font-heading text-2xl sm:text-3xl font-black text-[#1E1C10] tracking-tight">
-                Student Profile
-              </h1>
-              <span className="px-3 py-1 rounded-full bg-[#FAF3DF] text-[#006B5B] font-bold text-xs uppercase tracking-wider border border-[#CDC7AA]/30">
-                Placement 2026
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-[#4B4731] font-medium mt-0.5">
-              Manage your personal details, academic standing, and career targets.
-            </p>
-          </div>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-bold text-[#7C775F] uppercase tracking-widest mb-0.5">
+            Account
+          </p>
+          <h1 className="font-heading text-2xl font-black text-[#1A1A1A]">
+            Student Profile
+          </h1>
+          <p className="text-sm text-[#7C775F] mt-0.5">
+            Manage your personal, academic, and career info
+          </p>
         </div>
-
-        <div className="flex items-center gap-3 z-10 self-start md:self-auto flex-wrap">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
-            onClick={() => showToast('👁️ Public recruiter preview generated!')}
-            className="px-4 py-2.5 rounded-full bg-[#FAF3DF] hover:bg-[#F4EEDA] font-bold text-xs text-[#1E1C10] transition-all flex items-center gap-2 border border-[#CDC7AA]/40 active:scale-95"
+            onClick={() => showToast('Public recruiter preview generated!')}
+            className="px-4 py-2 rounded-full bg-[#FAF3DF] font-bold text-xs text-[#1E1C10] border border-[#CDC7AA]/40 flex items-center gap-1.5 hover:bg-[#EEE8D4] active:scale-95 transition-all"
           >
-            <Eye className="h-4 w-4 text-[#6A5F00]" />
-            <span>Preview Public View</span>
+            <Eye className="h-3.5 w-3.5 text-[#6A5F00]" />
+            Preview
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="px-5 py-2.5 rounded-full bg-[#FFE600] hover:bg-[#DEC800] text-[#1A1A1A] font-extrabold text-xs shadow-md transition-all transform hover:-translate-y-0.5 active:scale-95 flex items-center gap-2 border border-[#CDC7AA]/40 group"
+            className="px-4 py-2 rounded-full bg-[#FFE600] text-[#1A1A1A] font-bold text-xs flex items-center gap-1.5 hover:brightness-105 hover:shadow-md active:scale-95 transition-all"
           >
-            <span>Save Changes</span>
-            <Save className="h-4 w-4 text-[#1A1A1A] transition-transform group-hover:rotate-12" />
+            <Save className="h-3.5 w-3.5" />
+            Save
           </button>
         </div>
       </div>
 
-      {/* ─── Main Top Grid: Profile & Academic Info ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* LEFT COLUMN: Student Avatar & Identity (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-6">
-          {/* Identity Card */}
-          <div className="bg-white p-6 sm:p-7 rounded-3xl shadow-sm border border-[#CDC7AA]/40 relative flex flex-col items-center text-center">
-            {/* Floating Status Pill */}
-            <div className="absolute top-6 right-6">
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00F5D4]/30 text-[#006B5B] font-bold text-xs border border-[#006B5B]/20">
-                <span className="w-2 h-2 rounded-full bg-[#006B5B] animate-ping" />
-                <span>Active Candidate</span>
-              </div>
-            </div>
-
-            {/* Avatar Container */}
-            <div className="relative mt-2 mb-4 group cursor-pointer">
-              <div className="w-32 h-32 rounded-3xl bg-gradient-to-tr from-[#FFE600] via-[#FAF3DF] to-[#00F5D4] p-1.5 shadow-md">
-                <div className="w-full h-full rounded-2xl bg-[#FFE600] flex items-center justify-center font-heading text-4xl font-black text-[#1A1A1A] shadow-inner">
-                  AM
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Left: Identity */}
+        <div className="flex flex-col gap-4">
+          {/* Avatar + name card */}
+          <div className="bg-white rounded-2xl p-5 border border-[#CDC7AA]/30 shadow-sm flex flex-col items-center text-center gap-3">
+            <div className="relative group">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-[#FFE600] to-[#00F5D4] p-1 shadow-md">
+                <div className="w-full h-full rounded-xl bg-[#FFE600] flex items-center justify-center font-heading text-2xl font-black text-[#1A1A1A]">
+                  {name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .slice(0, 2)}
                 </div>
               </div>
-              {/* Upload Overlay Button */}
               <button
                 type="button"
-                onClick={() => showToast('📸 Photo upload dialog opened.')}
-                className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-[#FFE600] text-[#1A1A1A] shadow-md flex items-center justify-center hover:scale-110 active:scale-95 transition-all border border-[#CDC7AA]/40"
-                title="Change Avatar"
+                onClick={() => showToast('Photo upload opened')}
+                className="absolute -bottom-1.5 -right-1.5 w-8 h-8 rounded-full bg-[#FFE600] flex items-center justify-center shadow-md border-2 border-white hover:scale-110 active:scale-95 transition-all"
               >
-                <Camera className="h-5 w-5 text-[#1A1A1A]" />
+                <Camera className="h-3.5 w-3.5 text-[#1A1A1A]" />
               </button>
             </div>
-
-            {/* Student Title */}
-            <div className="flex items-center gap-1.5 justify-center">
-              <h2 className="font-heading text-xl sm:text-2xl font-black text-[#1E1C10]">
-                {name}
-              </h2>
-              <Verified className="h-5 w-5 text-[#006B5B]" />
+            <div>
+              <div className="flex items-center gap-1.5 justify-center">
+                <h2 className="font-heading text-lg font-black text-[#1A1A1A]">
+                  {name}
+                </h2>
+                <Verified className="h-4 w-4 text-[#006B5B]" />
+              </div>
+              <p className="text-xs text-[#7C775F] mt-0.5">{email}</p>
             </div>
-            <p className="text-xs text-[#7C775F] font-semibold mb-3">{email}</p>
-
-            {/* Chips Row */}
-            <div className="flex flex-wrap items-center justify-center gap-2 mb-5">
-              <span className="px-3 py-1 rounded-full bg-[#FFE600] text-[#1A1A1A] font-bold text-xs border border-[#CDC7AA]/30">
+            <div className="flex flex-wrap justify-center gap-1.5">
+              <span className="px-2.5 py-1 rounded-full bg-[#FFE600] text-[#1A1A1A] font-bold text-[11px]">
                 {studentBranch}
               </span>
-              <span className="px-3 py-1 rounded-full bg-[#FAF3DF] text-[#1E1C10] font-bold text-xs border border-[#CDC7AA]/30">
+              <span className="px-2.5 py-1 rounded-full bg-[#FAF3DF] text-[#1E1C10] font-bold text-[11px] border border-[#CDC7AA]/30">
                 Batch {gradYear}
               </span>
-              <span className="px-3 py-1 rounded-full bg-[#9B5DE5]/20 text-[#6B21A8] font-bold text-xs">
+              <span className="px-2.5 py-1 rounded-full bg-[#9B5DE5]/15 text-[#6B21A8] font-bold text-[11px]">
                 {profileConfig.trackBadge}
               </span>
             </div>
-
-            {/* University & Location List */}
-            <div className="w-full flex flex-col gap-2.5 pt-4 border-t border-[#CDC7AA]/30 bg-[#FAF3DF]/50 p-4 rounded-2xl text-left border border-[#CDC7AA]/20">
-              <div className="flex items-center gap-2.5 text-[#1E1C10]">
-                <School className="h-4.5 w-4.5 text-[#6A5F00] shrink-0" />
-                <span className="text-xs font-bold truncate">{college}</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-[#1E1C10]">
-                <Terminal className="h-4.5 w-4.5 text-[#006B5B] shrink-0" />
-                <span className="text-xs font-medium truncate">{degree}</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-[#7C775F]">
-                <MapPin className="h-4.5 w-4.5 text-[#BA1A1A] shrink-0" />
-                <span className="text-xs font-medium truncate">Calicut, Kerala, India</span>
-              </div>
+            <div className="flex items-center gap-1.5 text-xs text-[#006B5B] font-bold">
+              <span className="w-2 h-2 rounded-full bg-[#006B5B] animate-ping" />
+              Active &middot; {college}
             </div>
           </div>
 
-          {/* Profile Strength Card Widget */}
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-[#CDC7AA]/40 flex flex-col gap-3 relative overflow-hidden">
+          {/* Profile Strength */}
+          <div className="bg-white rounded-2xl p-4 border border-[#CDC7AA]/30 shadow-sm flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-[#6A5F00] fill-[#FFE600]" />
-                <span className="font-heading text-base font-black text-[#1E1C10]">Profile Strength</span>
+              <div className="flex items-center gap-1.5">
+                <Star className="h-4 w-4 text-[#6A5F00] fill-[#FFE600]" />
+                <span className="font-bold text-sm text-[#1A1A1A]">
+                  Profile Strength
+                </span>
               </div>
-              <span className="font-heading text-lg font-black text-[#006B5B]">70%</span>
+              <span className="font-black text-base text-[#006B5B]">
+                {strengthPercent}%
+              </span>
             </div>
-
-            {/* Progress Track */}
-            <div className="w-full h-3 rounded-full bg-[#FAF3DF] overflow-hidden">
+            <div className="w-full h-2 rounded-full bg-[#FAF3DF] overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-[#FFE600] via-[#00F5D4] to-[#006B5B] transition-all duration-1000"
-                style={{ width: '70%' }}
+                className="h-full rounded-full bg-gradient-to-r from-[#FFE600] to-[#006B5B] transition-all duration-700"
+                style={{ width: `${strengthPercent}%` }}
               />
             </div>
-
-            {/* Step Badges */}
-            <div className="grid grid-cols-2 gap-2 pt-2 text-xs font-bold">
-              <div className="flex items-center gap-1.5 text-[#006B5B]">
-                <CheckCircle2 className="h-4 w-4" />
-                <span>Basic Details (100%)</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[#006B5B]">
-                <CheckCircle2 className="h-4 w-4" />
-                <span>Academics (100%)</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[#6A5F00]">
-                <Clock className="h-4 w-4" />
-                <span>Resume / Projects (85%)</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[#BA1A1A]">
-                <AlertCircle className="h-4 w-4" />
-                <span>LinkedIn / Socials (0%)</span>
-              </div>
+            <div className="space-y-1.5">
+              {PROFILE_COMPLETIONS.map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center gap-2 text-xs font-medium"
+                >
+                  {item.done ? (
+                    <CheckCircle className="h-3.5 w-3.5 text-[#006B5B]" />
+                  ) : (
+                    <AlertCircle className="h-3.5 w-3.5 text-[#7C775F]" />
+                  )}
+                  <span
+                    className={item.done ? 'text-[#1A1A1A]' : 'text-[#7C775F]'}
+                  >
+                    {item.label}
+                  </span>
+                  {item.done && (
+                    <span className="ml-auto text-[#006B5B] font-bold">Done</span>
+                  )}
+                </div>
+              ))}
             </div>
-
-            {/* Mascot Tip Card */}
-            <div className="mt-2 p-3.5 rounded-2xl bg-[#FAF3DF] flex items-center gap-3 border border-[#CDC7AA]/30">
-              <div className="w-10 h-10 shrink-0 rounded-2xl bg-[#FFE600] flex items-center justify-center text-[#1A1A1A] shadow-xs">
-                <Sparkles className="h-5 w-5 text-[#6A5F00]" />
-              </div>
-              <p className="text-xs text-[#4B4731] leading-relaxed">
-                <strong className="text-[#1E1C10]">Pal-Bot Tip:</strong> Complete your LinkedIn & GitHub sync to hit 100% placement readiness!
-              </p>
+            <div className="text-[11px] text-[#7C775F] p-2.5 bg-[#FAF3DF] rounded-xl border border-[#CDC7AA]/30">
+              Sync LinkedIn & GitHub to reach 100% readiness
             </div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Academic & Personal Form Grid (7 cols) */}
-        <div className="lg:col-span-7 bg-white p-6 sm:p-7 rounded-3xl shadow-sm border border-[#CDC7AA]/40 flex flex-col gap-6">
-          <div className="flex items-center justify-between pb-3 border-b border-[#CDC7AA]/20">
-            <div>
-              <h3 className="font-heading text-lg sm:text-xl font-black text-[#1E1C10]">
-                Academic & Personal Details
-              </h3>
-              <p className="text-xs text-[#4B4731] font-medium mt-0.5">
-                Keep your college records accurate for on-campus drives.
-              </p>
-            </div>
-            <div className="w-10 h-10 rounded-2xl bg-[#FAF3DF] flex items-center justify-center border border-[#CDC7AA]/30">
-              <Award className="h-5 w-5 text-[#6A5F00]" />
+        {/* Right: Forms */}
+        <div className="lg:col-span-2 flex flex-col gap-4">
+          {/* Academic & Personal */}
+          <div className="bg-white rounded-2xl p-5 border border-[#CDC7AA]/30 shadow-sm">
+            <h3 className="font-heading text-base font-black text-[#1A1A1A] mb-4">
+              Academic & Personal Details
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {([
+                {
+                  label: 'Full Name',
+                  value: name,
+                  setter: setName,
+                  icon: <User className="h-4 w-4" />,
+                  type: 'text',
+                },
+                {
+                  label: 'Email Address',
+                  value: email,
+                  setter: setEmail,
+                  icon: <Mail className="h-4 w-4" />,
+                  type: 'email',
+                },
+                {
+                  label: 'Phone',
+                  value: phone,
+                  setter: setPhone,
+                  icon: <Phone className="h-4 w-4" />,
+                  type: 'tel',
+                },
+                {
+                  label: 'College',
+                  value: college,
+                  setter: setCollege,
+                  icon: <Building className="h-4 w-4" />,
+                  type: 'text',
+                },
+                {
+                  label: 'Degree & Branch',
+                  value: degree,
+                  setter: setDegree,
+                  icon: <GraduationCap className="h-4 w-4" />,
+                  type: 'text',
+                },
+                {
+                  label: 'Roll Number',
+                  value: rollNo,
+                  setter: setRollNo,
+                  icon: <Hash className="h-4 w-4" />,
+                  type: 'text',
+                },
+                {
+                  label: 'CGPA',
+                  value: cgpa,
+                  setter: setCgpa,
+                  icon: <Star className="h-4 w-4" />,
+                  type: 'text',
+                },
+              ] as { label: string; value: string; setter: (v: string) => void; icon: React.ReactNode; type: string }[]).map(
+                (field) => (
+                  <div key={field.label} className="flex flex-col gap-1">
+                    <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
+                      {field.label}
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C775F]">
+                        {field.icon}
+                      </span>
+                      <input
+                        type={field.type}
+                        value={field.value}
+                        onChange={(e) => field.setter(e.target.value)}
+                        className={inputCls}
+                      />
+                    </div>
+                  </div>
+                )
+              )}
+              {/* Grad Year */}
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
+                  Graduation Year
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C775F]">
+                    <Calendar className="h-4 w-4" />
+                  </span>
+                  <select
+                    value={gradYear}
+                    onChange={(e) => setGradYear(e.target.value)}
+                    className={inputCls + ' cursor-pointer'}
+                  >
+                    <option>2025</option>
+                    <option>2026</option>
+                    <option>2027</option>
+                    <option>2028</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Form Inputs Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-            {/* Full Name */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C775F] h-4 w-4" />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full bg-[#FAF3DF]/70 text-[#1E1C10] font-semibold text-xs sm:text-sm border border-[#CDC7AA]/40 focus:bg-white focus:border-[#6A5F00] outline-none transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* Email Address */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C775F] h-4 w-4" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full bg-[#FAF3DF]/70 text-[#1E1C10] font-semibold text-xs sm:text-sm border border-[#CDC7AA]/40 focus:bg-white focus:border-[#6A5F00] outline-none transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* Phone Number */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
-                Phone / WhatsApp
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C775F] h-4 w-4" />
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full bg-[#FAF3DF]/70 text-[#1E1C10] font-semibold text-xs sm:text-sm border border-[#CDC7AA]/40 focus:bg-white focus:border-[#6A5F00] outline-none transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* College / University */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
-                College / University
-              </label>
-              <div className="relative">
-                <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C775F] h-4 w-4" />
-                <input
-                  type="text"
-                  value={college}
-                  onChange={(e) => setCollege(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full bg-[#FAF3DF]/70 text-[#1E1C10] font-semibold text-xs sm:text-sm border border-[#CDC7AA]/40 focus:bg-white focus:border-[#6A5F00] outline-none transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* Degree & Branch */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
-                Degree & Branch
-              </label>
-              <div className="relative">
-                <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C775F] h-4 w-4" />
-                <input
-                  type="text"
-                  value={degree}
-                  onChange={(e) => setDegree(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full bg-[#FAF3DF]/70 text-[#1E1C10] font-semibold text-xs sm:text-sm border border-[#CDC7AA]/40 focus:bg-white focus:border-[#6A5F00] outline-none transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* Student ID / Roll No */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
-                Student ID / Roll No
-              </label>
-              <div className="relative">
-                <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C775F] h-4 w-4" />
-                <input
-                  type="text"
-                  value={rollNo}
-                  onChange={(e) => setRollNo(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full bg-[#FAF3DF]/70 text-[#1E1C10] font-semibold text-xs sm:text-sm border border-[#CDC7AA]/40 focus:bg-white focus:border-[#6A5F00] outline-none transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* Graduation Year */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
-                Graduation Year
-              </label>
-              <div className="relative">
-                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C775F] h-4 w-4" />
-                <select
-                  value={gradYear}
-                  onChange={(e) => setGradYear(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full bg-[#FAF3DF]/70 text-[#1E1C10] font-semibold text-xs sm:text-sm border border-[#CDC7AA]/40 focus:bg-white focus:border-[#6A5F00] outline-none transition-colors cursor-pointer"
-                >
-                  <option value="2025">2025</option>
-                  <option value="2026">2026</option>
-                  <option value="2027">2027</option>
-                  <option value="2028">2028</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Current CGPA */}
-            <div className="flex flex-col gap-1.5">
+          {/* Bio + Career Prefs */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Bio */}
+            <div className="bg-white rounded-2xl p-4 border border-[#CDC7AA]/30 shadow-sm flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
-                  Current CGPA
-                </label>
-                <span className="px-2 py-0.5 rounded-full bg-[#00F5D4]/30 text-[#006B5B] font-bold text-[10px]">
-                  Top 15% Batch
+                <h3 className="font-bold text-sm text-[#1A1A1A]">Profile Bio</h3>
+                <span className="text-[11px] text-[#7C775F]">
+                  {bio.length}/280
                 </span>
               </div>
-              <div className="relative">
-                <Star className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C775F] h-4 w-4" />
-                <input
-                  type="text"
-                  value={cgpa}
-                  onChange={(e) => setCgpa(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full bg-[#FAF3DF]/70 text-[#1E1C10] font-bold text-xs sm:text-sm border border-[#CDC7AA]/40 focus:bg-white focus:border-[#6A5F00] outline-none transition-colors"
+              <textarea
+                rows={5}
+                maxLength={280}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                className="w-full p-3 rounded-xl bg-[#FAF3DF]/60 text-[#1E1C10] text-xs sm:text-sm resize-none border border-[#CDC7AA]/40 focus:bg-white focus:border-[#6A5F00] outline-none transition-colors leading-relaxed"
+              />
+              <button
+                type="button"
+                onClick={handleAiPolish}
+                disabled={isPolishing}
+                className="self-start px-3.5 py-2 rounded-full bg-[#9B5DE5]/15 text-[#6B21A8] font-bold text-xs flex items-center gap-1.5 hover:bg-[#9B5DE5]/25 active:scale-95 transition-all disabled:opacity-50"
+              >
+                <Wand2
+                  className={`h-3.5 w-3.5 ${isPolishing ? 'animate-spin' : ''}`}
                 />
+                {isPolishing ? 'Polishing...' : 'AI Polish'}
+              </button>
+            </div>
+
+            {/* Career Prefs */}
+            <div className="bg-white rounded-2xl p-4 border border-[#CDC7AA]/30 shadow-sm flex flex-col gap-4">
+              <h3 className="font-bold text-sm text-[#1A1A1A]">
+                Career Preferences
+              </h3>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
+                  Target Role
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C775F]">
+                    <Briefcase className="h-4 w-4" />
+                  </span>
+                  <input
+                    type="text"
+                    value={targetRole}
+                    onChange={(e) => setTargetRole(e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between">
+                  <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
+                    Expected CTC
+                  </label>
+                  <span className="text-xs font-black text-[#006B5B]">
+                    {Math.max(6, ctcValue - 4)}&ndash;{ctcValue} LPA
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={6}
+                  max={35}
+                  step={1}
+                  value={ctcValue}
+                  onChange={(e) => setCtcValue(Number(e.target.value))}
+                  className="w-full accent-[#006B5B] cursor-pointer"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
+                  Preferred Locations
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {locations.map((loc) => (
+                    <span
+                      key={loc}
+                      className="px-2.5 py-1 rounded-full bg-[#FAF3DF] text-[#1E1C10] font-bold text-[11px] flex items-center gap-1 border border-[#CDC7AA]/30"
+                    >
+                      {loc}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setLocations((prev) => prev.filter((l) => l !== loc))
+                        }
+                        className="hover:text-[#BA1A1A]"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                  {showAddCity ? (
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        value={newCity}
+                        onChange={(e) => setNewCity(e.target.value)}
+                        placeholder="City..."
+                        className="px-2.5 py-1 text-xs rounded-full bg-white border border-[#CDC7AA] outline-none w-20"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            if (
+                              newCity.trim() &&
+                              !locations.includes(newCity.trim())
+                            )
+                              setLocations((prev) => [...prev, newCity.trim()]);
+                            setNewCity('');
+                            setShowAddCity(false);
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (newCity.trim())
+                            setLocations((prev) => [...prev, newCity.trim()]);
+                          setNewCity('');
+                          setShowAddCity(false);
+                        }}
+                        className="px-2 py-1 rounded-full bg-[#FFE600] text-[#1A1A1A] font-bold text-xs"
+                      >
+                        Add
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowAddCity(false)}
+                      >
+                        <X className="h-3.5 w-3.5 text-[#7C775F]" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowAddCity(true)}
+                      className="px-2.5 py-1 rounded-full bg-white text-[#6A5F00] font-bold text-[11px] flex items-center gap-1 border border-[#CDC7AA]/40 hover:bg-[#FAF3DF] transition-colors"
+                    >
+                      <Plus className="h-3 w-3" /> Add
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#FAF3DF] border border-[#CDC7AA]/30">
+                <div>
+                  <p className="text-xs font-bold text-[#1A1A1A]">
+                    Open to Internships
+                  </p>
+                  <p className="text-[11px] text-[#7C775F]">
+                    Jan&ndash;Jun 2026 (6 months)
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={openToInternship}
+                    onChange={(e) => setOpenToInternship(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-[#E0DAC7] rounded-full peer peer-checked:bg-[#00F5D4] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5 shadow-inner" />
+                </label>
               </div>
             </div>
           </div>
 
-          {/* College Verification Status Banner */}
-          <div className="mt-2 p-4 rounded-2xl bg-[#FAF3DF] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-[#CDC7AA]/40">
+          {/* Verification Banner */}
+          <div className="bg-[#FAF3DF] rounded-2xl p-4 border border-[#CDC7AA]/30 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#26FEDC] flex items-center justify-center text-[#007261]">
-                <Verified className="h-5 w-5" />
+              <div className="w-9 h-9 rounded-xl bg-[#26FEDC] flex items-center justify-center text-[#007261] shrink-0">
+                <Verified className="h-4 w-4" />
               </div>
               <div>
-                <h4 className="font-bold text-xs sm:text-sm text-[#1E1C10]">
-                  College Verification Status
-                </h4>
+                <p className="text-xs font-bold text-[#1A1A1A]">
+                  College Verification
+                </p>
                 <p className="text-[11px] text-[#4B4731]">
-                  Verified by TPO (Training & Placement Cell, NITC)
+                  Verified by TPO &middot; Training & Placement Cell, NITC
                 </p>
               </div>
             </div>
             <button
               type="button"
-              onClick={() => showToast('🎓 Official TPO verification certificate downloaded!')}
-              className="px-4 py-2 rounded-full bg-white text-[#1E1C10] hover:bg-[#FAF3DF] font-bold text-xs shadow-xs border border-[#CDC7AA]/40 transition-all self-end sm:self-auto"
+              onClick={() => showToast('Certificate downloaded!')}
+              className="px-3.5 py-1.5 rounded-full bg-white text-[#1E1C10] font-bold text-xs border border-[#CDC7AA]/40 hover:bg-white/80 active:scale-95 transition-all shrink-0"
             >
-              View Certificate
+              View Cert
             </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── BOTTOM SECTION: Career & Placement Preferences ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        {/* CARD 1: Profile Summary / Bio (5 cols) */}
-        <div className="lg:col-span-5 bg-white p-6 sm:p-7 rounded-3xl shadow-sm border border-[#CDC7AA]/40 flex flex-col justify-between gap-4">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Quote className="h-5 w-5 text-[#6A5F00]" />
-                <h3 className="font-heading text-base sm:text-lg font-black text-[#1E1C10]">
-                  Profile Summary / Bio
-                </h3>
-              </div>
-              <span className="text-[11px] font-bold text-[#7C775F] bg-[#FAF3DF] px-2.5 py-0.5 rounded-full border border-[#CDC7AA]/30">
-                {bio.length} / 300 chars
-              </span>
-            </div>
-
-            <div className="relative">
-              <textarea
-                rows={5}
-                maxLength={300}
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                className="w-full p-4 rounded-2xl bg-[#FAF3DF]/60 text-[#1E1C10] font-medium text-xs sm:text-sm resize-none border border-[#CDC7AA]/40 focus:bg-white focus:border-[#6A5F00] outline-none transition-colors leading-relaxed"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-2 flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={handleAiPolish}
-              disabled={isPolishing}
-              className="px-4 py-2 rounded-full bg-[#9B5DE5]/15 hover:bg-[#9B5DE5]/25 text-[#6B21A8] font-bold text-xs flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50"
-            >
-              <Wand2 className={`h-4 w-4 ${isPolishing ? 'animate-spin' : ''}`} />
-              <span>{isPolishing ? 'Polishing with Pal-Bot...' : 'AI Polish with Pal-Bot 🪄'}</span>
-            </button>
-            <span className="text-[#7C775F] text-[11px] font-medium">Recruiters read this first</span>
-          </div>
-        </div>
-
-        {/* CARD 2: Target Roles & Placement Preferences (7 cols) */}
-        <div className="lg:col-span-7 bg-white p-6 sm:p-7 rounded-3xl shadow-sm border border-[#CDC7AA]/40 flex flex-col justify-between gap-5">
-          <div>
-            <div className="flex items-center justify-between pb-3 border-b border-[#CDC7AA]/20 mb-4">
-              <div className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-[#006B5B]" />
-                <h3 className="font-heading text-base sm:text-lg font-black text-[#1E1C10]">
-                  Target Roles & Placement Preferences
-                </h3>
-              </div>
-              <span className="px-3 py-1 rounded-full bg-[#FFE600] text-[#1A1A1A] font-bold text-xs">
-                Placement 2026 Ready
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Primary Target Role */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
-                  Primary Target Role
-                </label>
-                <div className="relative">
-                  <Terminal className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7C775F] h-4 w-4" />
-                  <input
-                    type="text"
-                    value={targetRole}
-                    onChange={(e) => setTargetRole(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-full bg-[#FAF3DF]/70 text-[#1E1C10] font-semibold text-xs sm:text-sm border border-[#CDC7AA]/40 focus:bg-white focus:border-[#6A5F00] outline-none transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Expected Package */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
-                    Expected CTC Range
-                  </label>
-                  <span className="text-xs font-black text-[#006B5B]">
-                    {Math.max(6, ctcValue - 4)} - {ctcValue} LPA
-                  </span>
-                </div>
-                <div className="flex items-center bg-[#FAF3DF]/70 px-4 py-2.5 rounded-full border border-[#CDC7AA]/40">
-                  <input
-                    type="range"
-                    min="6"
-                    max="35"
-                    step="1"
-                    value={ctcValue}
-                    onChange={(e) => setCtcValue(Number(e.target.value))}
-                    className="w-full accent-[#006B5B] cursor-pointer"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Preferred Locations */}
-            <div className="flex flex-col gap-2 mt-4">
-              <label className="text-[11px] font-bold text-[#7C775F] uppercase tracking-wider">
-                Preferred Job Locations
-              </label>
-              <div className="flex flex-wrap items-center gap-2">
-                {locations.map((loc) => (
-                  <span
-                    key={loc}
-                    className="px-3.5 py-1.5 rounded-full bg-[#FAF3DF] text-[#1E1C10] font-bold text-xs flex items-center gap-1.5 border border-[#CDC7AA]/30"
-                  >
-                    <span>📍 {loc}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveLocation(loc)}
-                      className="hover:text-[#BA1A1A] transition-colors"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </span>
-                ))}
-
-                {showAddCity ? (
-                  <div className="flex items-center gap-1.5">
-                    <input
-                      type="text"
-                      value={newCity}
-                      onChange={(e) => setNewCity(e.target.value)}
-                      placeholder="Enter city..."
-                      className="px-3 py-1 text-xs rounded-full bg-white border border-[#CDC7AA] outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddLocation}
-                      className="px-3 py-1 rounded-full bg-[#FFE600] text-[#1A1A1A] font-bold text-xs"
-                    >
-                      Add
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowAddCity(false)}
-                      className="text-[#7C775F]"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowAddCity(true)}
-                    className="px-3.5 py-1.5 rounded-full bg-white hover:bg-[#FAF3DF] text-[#6A5F00] font-bold text-xs flex items-center gap-1 border border-[#CDC7AA]/40 shadow-xs"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>Add City</span>
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Open to Internships Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-2xl bg-[#FAF3DF] border border-[#CDC7AA]/40">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#00F5D4]/30 flex items-center justify-center text-[#006B5B]">
-                <Briefcase className="h-5 w-5" />
-              </div>
-              <div>
-                <span className="font-bold text-xs sm:text-sm text-[#1E1C10] block">
-                  Open to Pre-Placement Internships?
-                </span>
-                <span className="text-[11px] text-[#4B4731]">
-                  Available for Jan–June 2026 (6 months duration)
-                </span>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={openToInternship}
-                onChange={(e) => setOpenToInternship(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-12 h-6 bg-[#E0DAC7] rounded-full peer peer-checked:bg-[#00F5D4] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-6 shadow-inner" />
-            </label>
           </div>
         </div>
       </div>

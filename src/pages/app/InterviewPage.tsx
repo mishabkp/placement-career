@@ -1,18 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/shared/PageHeader';
 import { useAuth } from '../../context/AuthContext';
+import { Badge } from '../../components/ui/Badge';
 import {
   Mic,
-  SmartToy,
-  PlayArrow,
-  Timer,
-  Insights,
-  Groups,
-  Close,
-  CheckCircle2,
-} from '../../components/icons/StitchIcons';
-import { Button } from '../../components/ui/Button';
-import { Badge } from '../../components/ui/Badge';
+  Play,
+  RotateCcw,
+  Sparkles,
+  Clock,
+  ArrowRight,
+  HelpCircle,
+  Award,
+} from 'lucide-react';
 
 interface RoleInterviewData {
   title: string;
@@ -26,9 +25,9 @@ const BRANCH_INTERVIEW_DATA: Record<string, RoleInterviewData[]> = {
       title: 'Fullstack Engineer',
       category: 'Software Engineering',
       questions: [
-        'Could you walk me through how you optimize state management in a large-scale React application?',
-        'How do you design a database schema for handling millions of concurrent chat messages in PostgreSQL or MongoDB?',
-        'Describe a challenging bug you encountered in production and how you methodically resolved it.',
+        'How do you optimize state management and avoid unnecessary re-renders in a large-scale React application?',
+        'Describe how you design a database schema for handling millions of concurrent chat messages in PostgreSQL or MongoDB.',
+        'Describe a challenging bug you encountered in production or a project and how you methodically resolved it.',
         'Explain the trade-offs between REST, GraphQL, and gRPC in microservice architectures.',
         'Tell me about a time you had a technical disagreement with a teammate and how you reached consensus.',
       ],
@@ -48,11 +47,11 @@ const BRANCH_INTERVIEW_DATA: Record<string, RoleInterviewData[]> = {
       title: 'Frontend Engineer',
       category: 'Client Architecture',
       questions: [
-        'How does React 19 reconciliation and the Virtual DOM diffing algorithm function under the hood?',
-        'Explain Core Web Vitals (LCP, INP, CLS) and the specific techniques you use to improve them.',
-        'How do you implement micro-frontends or module federation in modern enterprise web applications?',
+        'How does React reconciliation and the Virtual DOM diffing algorithm function under the hood?',
+        'Explain Core Web Vitals (LCP, INP, CLS) and the specific techniques you use to optimize them.',
         'What are the performance implications of Server Components versus Client Components in Next.js?',
         'How do you ensure accessibility (WCAG 2.1 AA) and semantic HTML across complex custom widgets?',
+        'Describe your approach to creating reusable, themeable component libraries with TypeScript.',
       ],
     },
     {
@@ -111,28 +110,28 @@ const BRANCH_INTERVIEW_DATA: Record<string, RoleInterviewData[]> = {
         'How do you select appropriate fillet radii and draft angles for injection-molded or cast mechanical components?',
         'Walk through how you perform a tolerance stack-up analysis using Worst-Case vs RSS (Root Sum Square) methods.',
         'Explain 2D adaptive clearing versus traditional pocketing toolpaths in CNC machining with Fusion 360.',
-        'What are the primary considerations when selecting steel alloys (e.g. AISI 1018 vs 4140 vs 304 Stainless) for cyclic fatigue applications?',
+        'What are the primary considerations when selecting steel alloys for cyclic fatigue applications?',
       ],
     },
     {
-      title: 'CAE & Finite Element Analysis (FEA) Engineer',
-      category: 'Structural & Thermal Simulation',
+      title: 'CAE & Finite Element Analysis Engineer',
+      category: 'Structural & Simulation',
       questions: [
         'What is the difference between hex (brick) and tet (tetrahedral) meshing in ANSYS, and when is each preferred?',
-        'Explain Von Mises stress criteria and when it is appropriate for ductile materials versus brittle materials (Rankine/Tresca).',
+        'Explain Von Mises stress criteria and when it is appropriate for ductile materials versus brittle materials.',
         'How do you identify and resolve artificial stress singularities at sharp internal re-entrant corners in FEA?',
         'What boundary conditions are required to prevent rigid body motion in a 3D static structural analysis?',
         'Explain modal analysis and how natural frequencies relate to resonance avoidance in rotating machinery.',
       ],
     },
     {
-      title: 'Robotics & Mechatronics Engineer',
+      title: 'Robotics & Automation Engineer',
       category: 'Automation & Kinematics',
       questions: [
         'What is the difference between forward kinematics and inverse kinematics in a 6-DOF industrial robotic arm?',
         'How do PID controller tuning parameters (Kp, Ki, Kd) influence overshoot, rise time, and steady-state error?',
         'Explain the working principle of optical encoders and how quadrature decoding determines rotational direction.',
-        'How do pneumatic actuators compare to servo-electric actuators in terms of precision, cycle speed, and payload?',
+        'How do pneumatic actuators compare to servo-electric actuators in terms of precision and cycle speed?',
         'Describe how you interface proximity sensors and load cells with an industrial PLC for pick-and-place automation.',
       ],
     },
@@ -143,14 +142,14 @@ const BRANCH_INTERVIEW_DATA: Record<string, RoleInterviewData[]> = {
       category: 'E-Mobility & Conversion',
       questions: [
         'Derive the duty cycle equation for a DC-DC Buck-Boost converter and explain continuous vs discontinuous conduction mode (CCM vs DCM).',
-        'Why are SiC (Silicon Carbide) and GaN MOSFETs preferred over conventional Silicon IGBTs in 800V EV traction inverters?',
-        'Explain Field Oriented Control (FOC) for Permanent Magnet Synchronous Motors (PMSM) using Clarke and Park transformations.',
-        'How does a Battery Management System (BMS) perform passive cell balancing and what are the drawbacks compared to active balancing?',
+        'Why are SiC and GaN MOSFETs preferred over conventional Silicon IGBTs in 800V EV traction inverters?',
+        'Explain Field Oriented Control (FOC) for Permanent Magnet Synchronous Motors using Clarke and Park transformations.',
+        'How does a Battery Management System (BMS) perform passive cell balancing versus active balancing?',
         'What methods are used to estimate Battery State of Charge (SoC) accurately under dynamic driving loads?',
       ],
     },
     {
-      title: 'Industrial Automation & PLC/SCADA Engineer',
+      title: 'Industrial Automation & PLC Engineer',
       category: 'Control & Automation',
       questions: [
         'Explain the scan cycle of a Siemens S7 PLC (Read Inputs, Execute Logic, Update Outputs, Diagnostics).',
@@ -158,17 +157,6 @@ const BRANCH_INTERVIEW_DATA: Record<string, RoleInterviewData[]> = {
         'How do you configure an interlocked safety circuit with emergency stop relays (Category 4 / SIL 3)?',
         'Explain Modbus RTU vs Modbus TCP protocol frame structures and register addressing conventions.',
         'How do you design alarm priority grouping and trending screens in WinCC SCADA for critical process monitoring?',
-      ],
-    },
-    {
-      title: 'Power Systems & Substation Engineer',
-      category: 'Transmission & Protection',
-      questions: [
-        'Explain the working principle of distance protection (Zone 1, 2, 3) for high-voltage transmission lines.',
-        'What causes transformer inrush current and how does harmonic restraint prevent false differential relay tripping?',
-        'How do you perform load flow and short-circuit fault analysis using ETAP software?',
-        'Explain the impact of renewable solar inverter integration on power grid inertia and frequency stability.',
-        'What is the purpose of SF6 gas in high-voltage circuit breakers and what are the eco-friendly alternative technologies being adopted?',
       ],
     },
   ],
@@ -192,361 +180,468 @@ const BRANCH_INTERVIEW_DATA: Record<string, RoleInterviewData[]> = {
         'How do you set up hard clash and soft clash detection matrices in Autodesk Navisworks Manage?',
         'Explain 4D BIM (scheduling) and 5D BIM (cost integration) workflows in modern construction management.',
         'How do you coordinate MEP routing through structural cast-in penetrations without compromising structural integrity?',
-        'Describe the OpenBIM IFC (Industry Foundation Classes) schema and how it facilitates interoperability between diverse software platforms.',
-      ],
-    },
-    {
-      title: 'Construction Project Manager & Planner',
-      category: 'Planning & Project Controls',
-      questions: [
-        'Explain the Critical Path Method (CPM) and the mathematical difference between Total Float and Free Float.',
-        'How do you compute Cost Performance Index (CPI) and Schedule Performance Index (SPI) in Earned Value Management (EVM)?',
-        'What are the trade-offs between project crashing (adding resources) and fast-tracking (parallel activities) to recover a delayed schedule in Primavera P6?',
-        'How do you manage resource leveling when equipment or specialized labor exceeds maximum daily availability?',
-        'Describe standard quality control tests required for RMC (Ready-Mix Concrete) before pouring on a high-rise construction site.',
+        'Describe the OpenBIM IFC schema and how it facilitates interoperability between diverse software platforms.',
       ],
     },
   ],
 };
 
+interface QuestionFeedback {
+  score: number;
+  strengths: string[];
+  improvement: string;
+}
+
 export default function InterviewPage() {
   const { studentBranch } = useAuth();
   const branchKey = BRANCH_INTERVIEW_DATA[studentBranch] ? studentBranch : 'CSE';
-  const availableRoles = useMemo(() => BRANCH_INTERVIEW_DATA[branchKey], [branchKey]);
+  const availableRoles = useMemo(() => BRANCH_INTERVIEW_DATA[branchKey] || BRANCH_INTERVIEW_DATA.CSE, [branchKey]);
 
-  const [selectedRole, setSelectedRole] = useState<string>(
-    () => availableRoles[0]?.title || 'Fullstack Engineer'
-  );
-  const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>(() => availableRoles[0]?.title || 'Fullstack Engineer');
+  const [interviewType, setInterviewType] = useState<'technical' | 'behavioral'>('technical');
+  const [isSessionActive, setIsSessionActive] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [activeNotification, setActiveNotification] = useState<string | null>(null);
+  const [userAnswer, setUserAnswer] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+  const [feedback, setFeedback] = useState<QuestionFeedback | null>(null);
+  const [sessionCompleted, setSessionCompleted] = useState(false);
+  const [answersSubmitted, setAnswersSubmitted] = useState<number>(0);
 
-  // Sync role when student switches branch
+  // Sync selected role when branch changes
   useEffect(() => {
-    if (availableRoles.length > 0) {
+    if (availableRoles.length > 0 && !availableRoles.some((r) => r.title === selectedRole)) {
       setSelectedRole(availableRoles[0].title);
     }
-  }, [availableRoles]);
+  }, [availableRoles, selectedRole]);
 
   const currentRoleData = useMemo(() => {
     return availableRoles.find((r) => r.title === selectedRole) || availableRoles[0];
   }, [availableRoles, selectedRole]);
 
-  const mockQuestions = currentRoleData.questions;
+  const questions = currentRoleData.questions;
 
-  const showToast = (msg: string) => {
-    setActiveNotification(msg);
-    setTimeout(() => setActiveNotification(null), 3000);
+  const handleStartInterview = () => {
+    setCurrentQuestionIndex(0);
+    setUserAnswer('');
+    setFeedback(null);
+    setAnswersSubmitted(0);
+    setSessionCompleted(false);
+    setShowHint(false);
+    setIsSessionActive(true);
   };
 
-  const handleStartSession = () => {
-    setCurrentQuestionIndex(0);
-    setIsSessionModalOpen(true);
+  const handleSpeechToggle = () => {
+    if (!isRecording) {
+      setIsRecording(true);
+      // Simulate real-time dictation after 1.5 seconds if speech is empty
+      setTimeout(() => {
+        setUserAnswer((prev) =>
+          prev
+            ? prev + ' In addition, I consider the scalability trade-offs and edge cases early in the design.'
+            : 'To approach this problem, I would first break it down into the core data models and requirements. For example, ensuring proper indexing and caching strategies to minimize latency...'
+        );
+        setIsRecording(false);
+      }, 2000);
+    } else {
+      setIsRecording(false);
+    }
+  };
+
+  const handleSubmitAnswer = () => {
+    // Generate helpful, concise AI evaluation based on length and content
+    const length = userAnswer.trim().length;
+    const score = length > 120 ? 9.0 : length > 50 ? 8.0 : 7.0;
+
+    setFeedback({
+      score,
+      strengths: [
+        'Structured thought process and clear technical terminology.',
+        'Directly addressed the core architectural requirement.',
+      ],
+      improvement:
+        'Consider mentioning concrete error handling or performance trade-offs (e.g. time vs space complexity).',
+    });
+    setAnswersSubmitted((prev) => prev + 1);
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex((prev) => prev + 1);
+      setUserAnswer('');
+      setFeedback(null);
+      setShowHint(false);
+    } else {
+      setSessionCompleted(true);
+    }
+  };
+
+  const handleExitSession = () => {
+    setIsSessionActive(false);
+    setSessionCompleted(false);
   };
 
   return (
-    <div className="space-y-8 pb-16 w-full font-sans">
-      {/* Toast Notification */}
-      {activeNotification && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#1A1A1A] text-[#FFE600] px-5 py-3 rounded-2xl shadow-2xl border border-[#FFE600]/40 flex items-center gap-3 animate-bounce">
-          <SmartToy className="h-5 w-5 text-[#FFE600]" />
-          <span className="text-xs font-bold text-white">{activeNotification}</span>
-        </div>
-      )}
-
+    <div className="space-y-6 pb-16 w-full font-sans">
       {/* Page Header */}
       <PageHeader
-        title="Mock Interview HQ"
-        description="Sharpen your responses, crush tough behavioral questions, and boost your confidence with our friendly AI coach!"
-        icon={<Mic className="h-6 w-6 text-[#6A5F00]" />}
-        badge={<Badge variant="cyprus">AI Interviewer v2.4</Badge>}
+        title="AI Mock Interview"
+        description="Practice branch-tailored technical and behavioral interview questions with instant, structured AI evaluation."
+        icon={<Mic className="h-6 w-6 text-[#726600]" />}
+        badge={<Badge variant="default">{studentBranch || 'Engineering'} Track</Badge>}
         actions={
-          <Button
-            variant="primary"
-            onClick={handleStartSession}
-            className="flex items-center gap-2 !bg-[#FFE600] !text-[#1A1A1A] !border-none !rounded-full font-bold shadow-md hover:scale-105"
-          >
-            <PlayArrow className="h-4 w-4" />
-            Start Quick Mock
-          </Button>
+          !isSessionActive && (
+            <button
+              onClick={handleStartInterview}
+              className="px-5 py-2.5 bg-[#FFE600] text-[#1E1C10] font-bold text-xs rounded-full shadow-sm hover:brightness-105 transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Play className="h-3.5 w-3.5 fill-current" />
+              Start Mock Interview
+            </button>
+          )
         }
       />
 
-      {/* ─── Top Banner Section (Exact Stitch Colors) ─── */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5 bg-[#FAF3DF] border border-[#CDC7AA]/50 p-6 sm:p-8 rounded-3xl shadow-sm">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="px-3.5 py-1 bg-[#26FEDC] text-[#007261] rounded-full text-[10px] uppercase tracking-wider font-extrabold shadow-sm">
-              Practice Zone
-            </span>
-            <span className="text-[#4B4731] text-xs font-semibold">AI Interviewer v2.4</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1E1C10] tracking-tight font-heading">
-            Mock Interview HQ 🤖✨
-          </h1>
-          <p className="text-xs sm:text-sm text-[#4B4731] max-w-xl leading-relaxed">
-            Sharpen your responses, crush tough behavioral questions, and boost your confidence with our friendly AI coach!
-          </p>
-        </div>
+      {/* ─── CASE 1: ACTIVE INTERVIEW SESSION ─── */}
+      {isSessionActive ? (
+        <div className="bg-[#FAF3DF] border border-[#CDC7AA]/60 rounded-3xl p-6 sm:p-8 shadow-xs animate-fadeIn space-y-6">
+          {sessionCompleted ? (
+            /* Completion Card */
+            <div className="text-center py-8 max-w-lg mx-auto space-y-5">
+              <div className="w-16 h-16 rounded-full bg-[#FFE600] text-[#1E1C10] flex items-center justify-center mx-auto shadow-sm">
+                <Award className="w-8 h-8 text-[#6A5F00]" />
+              </div>
 
-        <div className="flex items-center gap-3.5 bg-white p-4 sm:p-5 rounded-3xl border border-[#CDC7AA]/40 shadow-sm">
-          <div className="w-12 h-12 rounded-full bg-[#FFE600] flex items-center justify-center text-[#726600] shadow-sm">
-            <SmartToy className="h-7 w-7 animate-pulse" />
-          </div>
-          <div>
-            <div className="text-[11px] text-[#7C775F] font-bold uppercase tracking-wider">Overall Readiness</div>
-            <div className="text-xl font-black text-[#6A5F00] font-heading">88% (Ready!)</div>
-          </div>
-        </div>
-      </div>
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#7C775F]">
+                  Session Complete
+                </span>
+                <h2 className="text-2xl font-black text-[#1E1C10] font-heading mt-1">
+                  Great Practice Session!
+                </h2>
+                <p className="text-xs text-[#4B4731] mt-1">
+                  You completed the interview for <strong className="text-[#1E1C10]">{selectedRole}</strong>.
+                </p>
+              </div>
 
-      {/* ─── Main Bento Grid Layout (Stitch Styled) ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Interactive 'Start AI Mock Interview' Hero Card (8 cols) */}
-        <div className="lg:col-span-8 bg-[#FAF3DF] border border-[#CDC7AA]/50 rounded-3xl p-6 sm:p-8 relative overflow-hidden flex flex-col justify-between shadow-sm">
-          <div className="absolute -right-10 -bottom-10 w-80 h-80 bg-[#FFE600]/30 rounded-full blur-3xl pointer-events-none" />
+              <div className="grid grid-cols-3 gap-3 p-4 bg-white rounded-2xl border border-[#CDC7AA]/50 text-center">
+                <div>
+                  <span className="text-[10px] text-[#7C775F] font-bold uppercase block">Overall Score</span>
+                  <span className="text-xl font-black text-[#006B5B] block mt-0.5">86 / 100</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-[#7C775F] font-bold uppercase block">Questions</span>
+                  <span className="text-xl font-black text-[#1E1C10] block mt-0.5">
+                    {answersSubmitted} / {questions.length}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-[#7C775F] font-bold uppercase block">Confidence</span>
+                  <span className="text-xl font-black text-[#6A5F00] block mt-0.5">Strong</span>
+                </div>
+              </div>
 
-          <div className="z-10 max-w-xl mb-6">
-            <span className="inline-block bg-[#6A5F00] text-white text-[10px] font-bold px-3 py-1 rounded-full mb-3 shadow-sm">
-              ⚡ Instant AI Session
-            </span>
-            <h2 className="text-xl sm:text-2xl font-black text-[#1E1C10] font-heading mb-2">
-              Ready for a quick warm-up?
-            </h2>
-            <p className="text-xs sm:text-sm text-[#4B4731] mb-5 leading-relaxed">
-              Select your target role and let our friendly robot interviewer fire real-time behavioral and technical questions at you.
-            </p>
-
-            {/* Role selection pills */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {availableRoles.map((roleObj) => (
+              <div className="flex items-center justify-center gap-3 pt-2">
                 <button
-                  key={roleObj.title}
-                  type="button"
-                  onClick={() => setSelectedRole(roleObj.title)}
-                  className={`px-4 py-2 rounded-full text-xs font-bold cursor-pointer transition-all ${
-                    selectedRole === roleObj.title
-                      ? 'bg-[#6A5F00] text-white shadow-md'
-                      : 'bg-white border border-[#CDC7AA]/40 text-[#1E1C10] hover:bg-[#EEE8D4]'
-                  }`}
+                  onClick={handleStartInterview}
+                  className="px-5 py-2.5 bg-[#FFE600] text-[#1E1C10] text-xs font-bold rounded-full shadow-sm hover:brightness-105 transition-all flex items-center gap-2 cursor-pointer"
                 >
-                  {roleObj.title}
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Practice Again
                 </button>
-              ))}
+                <button
+                  onClick={handleExitSession}
+                  className="px-5 py-2.5 bg-white border border-[#CDC7AA]/60 text-[#1E1C10] text-xs font-bold rounded-full shadow-xs hover:bg-[#FAF3DF] transition-all cursor-pointer"
+                >
+                  Back to Dashboard
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Active Question Flow */
+            <>
+              {/* Stepper Header */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#CDC7AA]/40">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-[#6A5F00] bg-[#FFE600]/40 px-3 py-1 rounded-full">
+                    {selectedRole}
+                  </span>
+                  <span className="text-xs text-[#7C775F] font-medium">
+                    Question {currentQuestionIndex + 1} of {questions.length}
+                  </span>
+                </div>
 
-          <div className="z-10 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[#CDC7AA]/30">
-            <div className="flex items-center gap-2 text-xs font-bold text-[#4B4731]">
-              <Timer className="h-4 w-4 text-[#006B5B]" />
-              <span>Duration: ~20 mins (5 questions)</span>
-            </div>
-            <button
-              onClick={handleStartSession}
-              className="px-6 py-3 bg-[#FFE600] text-[#1A1A1A] font-black rounded-full text-xs shadow-[0_4px_14px_rgba(255,230,0,0.45)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
-            >
-              <PlayArrow className="h-4 w-4" />
-              Start AI Mock Interview
-            </button>
-          </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1.5">
+                    {questions.map((_, i) => (
+                      <span
+                        key={i}
+                        className={`w-2.5 h-2.5 rounded-full transition-all ${
+                          i === currentQuestionIndex
+                            ? 'bg-[#6A5F00] scale-125'
+                            : i < currentQuestionIndex
+                            ? 'bg-[#006B5B]'
+                            : 'bg-[#CDC7AA]/50'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleExitSession}
+                    className="text-xs text-[#7C775F] hover:text-[#1E1C10] font-bold ml-2 cursor-pointer"
+                  >
+                    Exit
+                  </button>
+                </div>
+              </div>
+
+              {/* Question Text Box */}
+              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#CDC7AA]/50 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#7C775F]">
+                    {currentRoleData.category}
+                  </span>
+                  <button
+                    onClick={() => setShowHint(!showHint)}
+                    className="text-xs text-[#6A5F00] font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5" />
+                    {showHint ? 'Hide Answering Tip' : 'Answering Tip'}
+                  </button>
+                </div>
+
+                <p className="text-base sm:text-lg font-bold text-[#1E1C10] leading-snug">
+                  "{questions[currentQuestionIndex]}"
+                </p>
+
+                {showHint && (
+                  <div className="p-3 bg-[#FAF3DF] rounded-xl border border-[#CDC7AA]/40 text-xs text-[#4B4731] leading-relaxed">
+                    <strong className="text-[#1E1C10]">Guidance:</strong> Start with a clear definition, walk through your practical approach step-by-step, and conclude with the trade-offs or a project example.
+                  </div>
+                )}
+              </div>
+
+              {/* User Answer Textarea */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-[#1E1C10]">
+                    Your Response:
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleSpeechToggle}
+                    className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      isRecording
+                        ? 'bg-[#FF6B6B] text-white animate-pulse'
+                        : 'bg-white border border-[#CDC7AA]/50 text-[#1E1C10] hover:bg-[#FAF3DF]'
+                    }`}
+                  >
+                    <Mic className="w-3.5 h-3.5" />
+                    {isRecording ? 'Listening...' : 'Voice Dictate'}
+                  </button>
+                </div>
+
+                <textarea
+                  value={userAnswer}
+                  onChange={(e) => setUserAnswer(e.target.value)}
+                  disabled={feedback !== null}
+                  rows={4}
+                  placeholder="Type or voice-dictate your response here..."
+                  className="w-full bg-white border border-[#CDC7AA]/60 rounded-2xl p-4 text-xs sm:text-sm text-[#1E1C10] focus:outline-none focus:border-[#6A5F00] transition-colors leading-relaxed placeholder-[#7C775F] disabled:bg-[#FAF3DF]/60"
+                />
+              </div>
+
+              {/* AI Feedback Card (when submitted) */}
+              {feedback && (
+                <div className="p-5 bg-white rounded-2xl border-2 border-[#FFE600] shadow-sm space-y-3 animate-fadeIn">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#6A5F00]" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#1E1C10]">
+                        AI Assessment
+                      </span>
+                    </div>
+                    <span className="text-xs font-black text-[#006B5B] bg-[#00F5D4]/25 px-2.5 py-0.5 rounded-full">
+                      Score: {feedback.score} / 10
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs">
+                    <div className="text-[#006B5B] font-medium">
+                      <strong className="text-[#1E1C10]">Strengths:</strong>
+                      <ul className="list-disc list-inside mt-0.5 space-y-0.5 text-[#4B4731]">
+                        {feedback.strengths.map((s, idx) => (
+                          <li key={idx}>{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="text-[#4B4731] pt-1 border-t border-[#CDC7AA]/30">
+                      <strong className="text-[#B45309]">Improvement Suggestion:</strong> {feedback.improvement}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Bottom Actions */}
+              <div className="flex items-center justify-between pt-2">
+                <button
+                  onClick={handleNextQuestion}
+                  className="text-xs font-bold text-[#7C775F] hover:text-[#1E1C10] cursor-pointer"
+                >
+                  {feedback ? 'Skip Evaluation' : 'Skip Question →'}
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {!feedback ? (
+                    <button
+                      onClick={handleSubmitAnswer}
+                      disabled={!userAnswer.trim()}
+                      className="px-5 py-2.5 bg-[#FFE600] text-[#1E1C10] text-xs font-bold rounded-full shadow-sm hover:brightness-105 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      Submit for AI Review
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleNextQuestion}
+                      className="px-5 py-2.5 bg-[#1E1C10] text-white text-xs font-bold rounded-full shadow-sm hover:bg-black transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>{currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'View Results'}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
-
-        {/* Instant Feedback Stats Card (4 cols) */}
-        <div className="lg:col-span-4 bg-white border border-[#CDC7AA]/40 rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-sm">
-          <div>
-            <div className="flex justify-between items-center mb-5">
-              <h3 className="text-lg font-bold text-[#1E1C10] font-heading">Feedback Stats</h3>
-              <Insights className="h-5 w-5 text-[#006B5B]" />
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-xs mb-1 font-bold">
-                  <span className="text-[#4B4731]">Clarity & Pacing</span>
-                  <span className="text-[#006A6A]">92%</span>
-                </div>
-                <div className="w-full bg-[#F4EEDA] h-3 rounded-full overflow-hidden p-0.5 shadow-inner">
-                  <div className="bg-[#006A6A] h-full rounded-full transition-all duration-1000" style={{ width: '92%' }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs mb-1 font-bold">
-                  <span className="text-[#4B4731]">Technical Accuracy</span>
-                  <span className="text-[#6A5F00]">85%</span>
-                </div>
-                <div className="w-full bg-[#F4EEDA] h-3 rounded-full overflow-hidden p-0.5 shadow-inner">
-                  <div className="bg-[#6A5F00] h-full rounded-full transition-all duration-1000" style={{ width: '85%' }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs mb-1 font-bold">
-                  <span className="text-[#4B4731]">Confidence & Tone</span>
-                  <span className="text-[#FF6B6B]">78%</span>
-                </div>
-                <div className="w-full bg-[#F4EEDA] h-3 rounded-full overflow-hidden p-0.5 shadow-inner">
-                  <div className="bg-[#FF6B6B] h-full rounded-full transition-all duration-1000" style={{ width: '78%' }} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-5 p-4 bg-[#FAF3DF] border-l-4 border-[#FFE600] rounded-2xl">
-            <p className="text-xs text-[#1E1C10] leading-relaxed">
-              💡 <span className="font-bold text-[#726600]">AI Tip:</span> Try to avoid filler words like "um" and "like". You used only 3 in your last session!
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── Lower Section: Upcoming Sessions & Score Breakdown ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Upcoming Practice Sessions (7 cols) */}
-        <div className="lg:col-span-7 bg-[#FAF3DF] border border-[#CDC7AA]/50 rounded-3xl p-6 sm:p-7 shadow-sm">
-          <div className="flex justify-between items-center mb-5">
-            <h3 className="text-lg font-bold text-[#1E1C10] font-heading">Upcoming Scheduled Sessions</h3>
-            <button
-              onClick={() => showToast('Session scheduler opened!')}
-              className="text-xs text-[#6A5F00] font-bold hover:underline cursor-pointer"
-            >
-              Schedule New +
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {/* Session Item 1 */}
-            <div className="flex items-center justify-between p-4 bg-white border border-[#CDC7AA]/40 rounded-2xl hover:border-[#FFE600] transition-all">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-[#26FEDC]/30 flex items-center justify-center text-[#007261]">
-                  <Mic className="h-5 w-5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-[#1E1C10]">System Design: Scalable Chat</h4>
-                  <p className="text-[11px] text-[#7C775F]">Tomorrow, 4:00 PM • AI Peer Match</p>
-                </div>
-              </div>
-              <span className="px-3.5 py-1 bg-[#FFE600] text-[#726600] rounded-full text-[10px] font-black shadow-sm">
-                Confirmed
+      ) : (
+        /* ─── CASE 2: DASHBOARD & SETUP VIEW (Clean & Minimal) ─── */
+        <div className="space-y-6">
+          {/* Main Setup Card */}
+          <div className="bg-[#FAF3DF] border border-[#CDC7AA]/60 rounded-3xl p-6 sm:p-7 shadow-xs">
+            <div className="max-w-2xl mb-6">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#6A5F00] block mb-1">
+                Configure Your Session
               </span>
-            </div>
-
-            {/* Session Item 2 */}
-            <div className="flex items-center justify-between p-4 bg-white border border-[#CDC7AA]/40 rounded-2xl hover:border-[#FFE600] transition-all">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-[#9B5DE5]/20 flex items-center justify-center text-[#9B5DE5]">
-                  <Groups className="h-5 w-5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-[#1E1C10]">Behavioral & Leadership</h4>
-                  <p className="text-[11px] text-[#7C775F]">Oct 24, 2:00 PM • Solo AI Bot</p>
-                </div>
-              </div>
-              <span className="px-3.5 py-1 bg-[#EEE8D4] text-[#4B4731] rounded-full text-[10px] font-bold">
-                Pending
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Detailed Score Breakdown & Past Performance (5 cols) */}
-        <div className="lg:col-span-5 bg-white border border-[#CDC7AA]/40 rounded-3xl p-6 sm:p-7 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-center mb-5">
-              <h3 className="text-lg font-bold text-[#1E1C10] font-heading">Score Breakdown</h3>
-              <span className="text-xs text-[#7C775F]">Last 5 Sessions</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-5">
-              <div className="bg-[#FAF3DF] border border-[#CDC7AA]/40 p-4 rounded-2xl text-center">
-                <div className="text-2xl sm:text-3xl font-black text-[#6A5F00] font-heading">94/100</div>
-                <div className="text-[11px] text-[#4B4731] font-bold mt-1">Top Score</div>
-              </div>
-              <div className="bg-[#FAF3DF] border border-[#CDC7AA]/40 p-4 rounded-2xl text-center">
-                <div className="text-2xl sm:text-3xl font-black text-[#006B5B] font-heading">4.2m</div>
-                <div className="text-[11px] text-[#4B4731] font-bold mt-1">Avg Answer Time</div>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-xs text-[#4B4731]">
-              <div className="flex justify-between py-1.5 border-b border-[#CDC7AA]/20">
-                <span>System Design Practice</span>
-                <span className="font-bold text-[#1E1C10]">91%</span>
-              </div>
-              <div className="flex justify-between py-1.5 border-b border-[#CDC7AA]/20">
-                <span>React State Architectures</span>
-                <span className="font-bold text-[#1E1C10]">94%</span>
-              </div>
-              <div className="flex justify-between py-1.5">
-                <span>Behavioral STAR Method</span>
-                <span className="font-bold text-[#1E1C10]">88%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── Interactive AI Mock Interview Simulation Modal ─── */}
-      {isSessionModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#1A1A1A]/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#FFF9E9] border-2 border-[#CDC7AA] rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl flex flex-col gap-4 animate-in fade-in zoom-in duration-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#FF6B6B] animate-ping" />
-                <h3 className="text-base font-bold text-[#1E1C10] font-heading">
-                  AI Mock Interview: {selectedRole}
-                </h3>
-              </div>
-              <button
-                onClick={() => setIsSessionModalOpen(false)}
-                className="w-9 h-9 rounded-full bg-[#F4EEDA] border border-[#CDC7AA]/50 flex items-center justify-center hover:bg-[#EEE8D4] transition-colors cursor-pointer"
-              >
-                <Close className="h-4 w-4 text-[#4B4731]" />
-              </button>
-            </div>
-
-            <div className="bg-[#FFE600]/20 border border-[#FFE600] p-4 rounded-2xl space-y-1">
-              <span className="text-[10px] font-black text-[#726600] uppercase tracking-wider">
-                Question {currentQuestionIndex + 1} of {mockQuestions.length}
-              </span>
-              <p className="text-sm font-bold text-[#1E1C10]">
-                "{mockQuestions[currentQuestionIndex]}"
+              <h2 className="text-xl sm:text-2xl font-black text-[#1E1C10] font-heading mb-2">
+                Select Your Target Role & Focus Area
+              </h2>
+              <p className="text-xs sm:text-sm text-[#4B4731]">
+                Questions are calibrated specifically for {studentBranch} campus hiring assessments.
               </p>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-[#4B4731]">Your Answer (Speak or Type)</label>
-              <textarea
-                rows={4}
-                placeholder="Structure your answer using Situation, Task, Action, Result (STAR method)..."
-                className="w-full bg-[#F4EEDA] border border-[#CDC7AA] rounded-2xl p-3.5 text-xs text-[#1E1C10] focus:outline-none focus:border-[#6A5F00] transition-all font-medium"
-              />
+            {/* Role Selection Pills */}
+            <div className="space-y-2 mb-5">
+              <label className="text-xs font-bold text-[#1E1C10] block">Specialization Track:</label>
+              <div className="flex flex-wrap gap-2">
+                {availableRoles.map((roleObj) => (
+                  <button
+                    key={roleObj.title}
+                    type="button"
+                    onClick={() => setSelectedRole(roleObj.title)}
+                    className={`px-4 py-2 rounded-full text-xs font-bold cursor-pointer transition-all ${
+                      selectedRole === roleObj.title
+                        ? 'bg-[#FFE600] text-[#1E1C10] shadow-sm font-black'
+                        : 'bg-white border border-[#CDC7AA]/50 text-[#4B4731] hover:bg-[#FAF3DF]'
+                    }`}
+                  >
+                    {roleObj.title}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-[#CDC7AA]/30">
-              <span className="text-xs text-[#4B4731] flex items-center gap-1 font-semibold">
-                <Mic className="h-4 w-4 text-[#006B5B]" /> AI Speech Recognition Active
-              </span>
-              <div className="flex gap-2">
-                {currentQuestionIndex < mockQuestions.length - 1 ? (
-                  <button
-                    onClick={() => setCurrentQuestionIndex((prev) => prev + 1)}
-                    className="bg-[#6A5F00] text-white text-xs font-bold px-4 py-2 rounded-full hover:scale-105 transition-all shadow-md cursor-pointer"
-                  >
-                    Next Question →
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setIsSessionModalOpen(false);
-                      showToast('Mock Interview finished! Your score is 91/100.');
-                    }}
-                    className="bg-[#00F5D4] text-[#1A1A1A] text-xs font-black px-5 py-2 rounded-full hover:scale-105 transition-all shadow-md flex items-center gap-1 cursor-pointer"
-                  >
-                    <CheckCircle2 className="h-4 w-4" /> Finish & View Rubric
-                  </button>
-                )}
+            {/* Interview Type Selector */}
+            <div className="space-y-2 mb-6">
+              <label className="text-xs font-bold text-[#1E1C10] block">Question Focus:</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg">
+                <button
+                  type="button"
+                  onClick={() => setInterviewType('technical')}
+                  className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                    interviewType === 'technical'
+                      ? 'bg-white border-[#FFE600] ring-2 ring-[#FFE600]/40 shadow-xs'
+                      : 'bg-white/60 border-[#CDC7AA]/40 hover:bg-white'
+                  }`}
+                >
+                  <p className="text-xs font-bold text-[#1E1C10]">Technical & Architecture</p>
+                  <p className="text-[11px] text-[#7C775F] mt-0.5">
+                    Core principles, system design, and implementation trade-offs.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setInterviewType('behavioral')}
+                  className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all ${
+                    interviewType === 'behavioral'
+                      ? 'bg-white border-[#FFE600] ring-2 ring-[#FFE600]/40 shadow-xs'
+                      : 'bg-white/60 border-[#CDC7AA]/40 hover:bg-white'
+                  }`}
+                >
+                  <p className="text-xs font-bold text-[#1E1C10]">Behavioral (STAR Method)</p>
+                  <p className="text-[11px] text-[#7C775F] mt-0.5">
+                    Teamwork, conflict resolution, and project leadership.
+                  </p>
+                </button>
               </div>
+            </div>
+
+            {/* Launch Banner */}
+            <div className="pt-4 border-t border-[#CDC7AA]/30 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-2 text-xs text-[#7C775F]">
+                <Clock className="w-4 h-4 text-[#6A5F00]" />
+                <span>5 Questions • Instant AI Rubric • Approx. 15 mins</span>
+              </div>
+
+              <button
+                onClick={handleStartInterview}
+                className="px-6 py-3 bg-[#FFE600] text-[#1E1C10] font-black rounded-full text-xs shadow-sm hover:brightness-105 active:scale-98 transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <Play className="h-4 w-4 fill-current" />
+                Start Mock Interview Session
+              </button>
+            </div>
+          </div>
+
+          {/* 3 Preparation Principles (Clean & Educational) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white p-5 rounded-2xl border border-[#CDC7AA]/50 shadow-xs">
+              <div className="w-8 h-8 rounded-xl bg-[#FAF3DF] flex items-center justify-center text-[#6A5F00] font-bold text-xs mb-3">
+                01
+              </div>
+              <h3 className="text-xs font-bold text-[#1E1C10] uppercase tracking-wide">
+                Structure Before Details
+              </h3>
+              <p className="text-xs text-[#4B4731] mt-1 leading-relaxed">
+                State your high-level approach first. Interviewers want to verify your problem breakdown before deep-diving into syntax.
+              </p>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-[#CDC7AA]/50 shadow-xs">
+              <div className="w-8 h-8 rounded-xl bg-[#FAF3DF] flex items-center justify-center text-[#006B5B] font-bold text-xs mb-3">
+                02
+              </div>
+              <h3 className="text-xs font-bold text-[#1E1C10] uppercase tracking-wide">
+                Use the STAR Framework
+              </h3>
+              <p className="text-xs text-[#4B4731] mt-1 leading-relaxed">
+                Frame project challenges as Situation, Task, Action, and Result with quantifiable outcomes.
+              </p>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-[#CDC7AA]/50 shadow-xs">
+              <div className="w-8 h-8 rounded-xl bg-[#FAF3DF] flex items-center justify-center text-[#B45309] font-bold text-xs mb-3">
+                03
+              </div>
+              <h3 className="text-xs font-bold text-[#1E1C10] uppercase tracking-wide">
+                Discuss Trade-Offs
+              </h3>
+              <p className="text-xs text-[#4B4731] mt-1 leading-relaxed">
+                Highlight why you chose a specific data structure or design pattern over plausible alternatives.
+              </p>
             </div>
           </div>
         </div>
