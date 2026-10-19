@@ -11,6 +11,7 @@ _connect_args = {"check_same_thread": False} if _is_sqlite else {}
 engine = create_engine(
     settings.DATABASE_URL,
     connect_args=_connect_args,
+    pool_pre_ping=True,
 )
 
 # ── Session factory ────────────────────────────────────────────────────────────
