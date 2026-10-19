@@ -16,10 +16,11 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS Setup
+# CORS Setup — allow localhost dev and any deployed https frontend (Vercel, Netlify, etc.)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
+    allow_origin_regex=r"https://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
