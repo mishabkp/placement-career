@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { apiService, setToken, clearToken, getToken, type AuthUser as ApiAuthUser } from '../services/api';
 
 export type UserRole = 'student' | 'faculty';
-export type LoginType = 'student' | 'faculty' | null;
 
+// Re-export shape that the rest of the app uses
 export interface AuthUser {
   id: string;
   name: string;
@@ -13,31 +14,11 @@ export interface AuthUser {
   initials: string;
   department: string;
   branch: string;
+  github_username?: string;
+  linkedin_url?: string;
+  skills?: string[];
+  target_role?: string;
 }
-
-const STUDENT_USER: AuthUser = {
-  id: 'std-arjun-1',
-  name: 'Arjun Patel',
-  email: 'arjun.patel@mgm.edu',
-  role: 'student',
-  track: 'Tier-1 SDE Track',
-  college: 'MGM College of Engineering',
-  initials: 'AP',
-  department: "B.Tech CSE '26",
-  branch: 'CSE',
-};
-
-const FACULTY_USER: AuthUser = {
-  id: 'tpo-rajesh-1',
-  name: 'Prof. Rajesh V.',
-  email: 'tpo.officer@mgm.edu',
-  role: 'faculty',
-  track: 'Training & Placement Officer (TPO)',
-  college: 'MGM College of Engineering',
-  initials: 'RV',
-  department: 'TPO Placement Cell',
-  branch: 'All Branches',
-};
 
 interface AuthContextType {
   role: UserRole;
@@ -45,86 +26,155 @@ interface AuthContextType {
   studentBranch: string;
   setStudentBranch: (branch: string) => void;
   loginedAsAdmin: boolean;
-  login: (role: UserRole) => void;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, role: UserRole, college: string, branch: string) => Promise<void>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
   isFaculty: boolean;
   isStudent: boolean;
+  isLoading: boolean;
+  authError: string | null;
+  clearAuthError: () => void;
 }
+
+const BRANCH_TRACKS: Record<string, string> = {
+  CSE: 'Tier-1 SDE Track',
+  ECE: 'Embedded Systems & VLSI Track',
+  EEE: 'EV Systems & Power Tech Track',
+  MECH: 'CAD/CAM & Mechatronics Track',
+  CIVIL: 'Structural BIM & Planning Track',
+};
+
+function toAuthUser(api: ApiAuthUser): AuthUser {
+  const initials = api.name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  return {
+    id: String(api.id),
+    name: api.name,
+    email: api.email,
+    role: api.role,
+    college: api.college || '',
+    branch: api.branch || 'CSE',
+    department: api.department || `B.Tech ${api.branch} '26`,
+    track: BRANCH_TRACKS[api.branch] || 'Engineering Track',
+    initials,
+    github_username: api.github_username,
+    linkedin_url: api.linkedin_url,
+    skills: api.skills,
+    target_role: api.target_role,
+  };
+}
+
+// Fallback guest user shown before auth loads
+const GUEST_USER: AuthUser = {
+  id: '',
+  name: 'Guest',
+  email: '',
+  role: 'student',
+  track: 'Tier-1 SDE Track',
+  college: '',
+  initials: 'G',
+  department: "B.Tech CSE '26",
+  branch: 'CSE',
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [role, setRoleState] = useState<UserRole>(() => {
-    const saved = localStorage.getItem('placement_pal_user_role');
-    return saved === 'faculty' ? 'faculty' : 'student';
-  });
+  const [user, setUser] = useState<AuthUser>(GUEST_USER);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [loginedAsAdmin, setLoginedAsAdmin] = useState(false);
+  const [studentBranch, setStudentBranchState] = useState(
+    () => localStorage.getItem('pp_branch') || 'CSE'
+  );
 
-  const [studentBranch, setStudentBranchState] = useState<string>(() => {
-    return localStorage.getItem('placement_pal_student_branch') || 'CSE';
-  });
+  // ── On mount: restore session from token ─────────────────────────────────
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+    apiService.getMe()
+      .then((apiUser) => {
+        const u = toAuthUser(apiUser);
+        setUser(u);
+        setLoginedAsAdmin(u.role === 'faculty');
+      })
+      .catch(() => {
+        clearToken(); // token expired or invalid
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
 
   const setStudentBranch = (branch: string) => {
     setStudentBranchState(branch);
-    localStorage.setItem('placement_pal_student_branch', branch);
+    localStorage.setItem('pp_branch', branch);
   };
 
-  // Track whether the user explicitly logged in as faculty/admin.
-  // Students cannot switch to TPO mode unless loginedAsAdmin is true.
-  const [loginedAsAdmin, setLoginedAsAdmin] = useState<boolean>(() => {
-    return localStorage.getItem('placement_pal_logined_as_admin') === 'true';
-  });
-
-  useEffect(() => {
-    localStorage.setItem('placement_pal_user_role', role);
-  }, [role]);
-
-  const login = (newRole: UserRole) => {
-    const isAdmin = newRole === 'faculty';
-    setRoleState(newRole);
-    setLoginedAsAdmin(isAdmin);
-    localStorage.setItem('placement_pal_user_role', newRole);
-    localStorage.setItem('placement_pal_logined_as_admin', String(isAdmin));
+  // ── Login ────────────────────────────────────────────────────────────────
+  const login = async (email: string, password: string) => {
+    setAuthError(null);
+    setIsLoading(true);
+    try {
+      const data = await apiService.login(email, password);
+      setToken(data.access_token);
+      const u = toAuthUser(data.user);
+      setUser(u);
+      setLoginedAsAdmin(u.role === 'faculty');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Login failed';
+      setAuthError(msg);
+      throw e;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  // ── Register ─────────────────────────────────────────────────────────────
+  const register = async (
+    name: string, email: string, password: string,
+    role: UserRole, college: string, branch: string
+  ) => {
+    setAuthError(null);
+    setIsLoading(true);
+    try {
+      const data = await apiService.register(name, email, password, role, college, branch);
+      setToken(data.access_token);
+      const u = toAuthUser(data.user);
+      setUser(u);
+      setLoginedAsAdmin(u.role === 'faculty');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Registration failed';
+      setAuthError(msg);
+      throw e;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ── Logout ───────────────────────────────────────────────────────────────
   const logout = () => {
-    setRoleState('student');
+    clearToken();
+    setUser(GUEST_USER);
     setLoginedAsAdmin(false);
-    localStorage.removeItem('placement_pal_user_role');
-    localStorage.removeItem('placement_pal_logined_as_admin');
+    localStorage.removeItem('pp_branch');
   };
 
   const switchRole = (newRole: UserRole) => {
-    // Only allow role switching if the user logged in as admin
     if (newRole === 'faculty' && !loginedAsAdmin) return;
-    setRoleState(newRole);
+    setUser((prev) => ({ ...prev, role: newRole }));
   };
 
-  const branchLabels: Record<string, string> = {
-    CSE: "B.Tech CSE '26",
-    ECE: "B.Tech ECE '26",
-    EEE: "B.Tech EEE '26",
-    MECH: "B.Tech MECH '26",
-    CIVIL: "B.Tech CIVIL '26",
-  };
+  const clearAuthError = () => setAuthError(null);
 
-  const branchTracks: Record<string, string> = {
-    CSE: 'Tier-1 SDE Track',
-    ECE: 'Embedded Systems & VLSI Track',
-    EEE: 'EV Systems & Power Tech Track',
-    MECH: 'CAD/CAM & Mechatronics Track',
-    CIVIL: 'Structural BIM & Planning Track',
-  };
-
-  const user =
-    role === 'faculty'
-      ? FACULTY_USER
-      : {
-          ...STUDENT_USER,
-          branch: studentBranch,
-          department: branchLabels[studentBranch] || `B.Tech ${studentBranch} '26`,
-          track: branchTracks[studentBranch] || 'Tier-1 Engineering Track',
-        };
+  const role: UserRole = user.role;
 
   return (
     <AuthContext.Provider
@@ -135,10 +185,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setStudentBranch,
         loginedAsAdmin,
         login,
+        register,
         logout,
         switchRole,
         isFaculty: role === 'faculty',
         isStudent: role === 'student',
+        isLoading,
+        authError,
+        clearAuthError,
       }}
     >
       {children}
@@ -148,8 +202,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 }

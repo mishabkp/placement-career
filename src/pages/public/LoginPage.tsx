@@ -1,25 +1,42 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Eye, EyeOff, GraduationCap, Users } from 'lucide-react';
+import { Eye, EyeOff, GraduationCap, Users, AlertCircle, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [activeRole, setActiveRole] = useState<'student' | 'faculty'>('student');
-  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const { login, isLoading, authError, clearAuthError } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e?: React.FormEvent) => {
+  const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    login(activeRole);
-    if (activeRole === 'faculty') {
-      navigate('/faculty-portal');
-    } else {
+    setLocalError(null);
+    clearAuthError();
+
+    if (!email || !password) {
+      setLocalError('Please enter your email and password.');
+      return;
+    }
+
+    try {
+      await login(email, password);
+      // Navigate based on the role returned from backend
       navigate('/dashboard');
+    } catch (err: unknown) {
+      // authError is already set by AuthContext
+      const msg = err instanceof Error ? err.message : 'Login failed. Please try again.';
+      setLocalError(msg);
     }
   };
+
+  const displayError = localError || authError;
 
   return (
     <div className="w-full max-w-md">
@@ -71,17 +88,29 @@ export default function LoginPage() {
           </button>
         </div>
 
+        {/* Error Message */}
+        {displayError && (
+          <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            <span>{displayError}</span>
+          </div>
+        )}
+
         <form className="space-y-4" onSubmit={handleLogin}>
           <Input
             label={activeRole === 'faculty' ? 'Institutional Email' : 'Student Email'}
             type="email"
             placeholder={activeRole === 'faculty' ? 'tpo.officer@college.edu' : 'student@college.edu'}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
           <Input
             label="Password"
             type={showPassword ? 'text' : 'password'}
             placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
             rightIcon={
               <button
@@ -108,27 +137,17 @@ export default function LoginPage() {
           </div>
 
           <div className="block pt-1">
-            <Button type="submit" fullWidth size="lg">
-              {activeRole === 'faculty' ? 'Login to Faculty / TPO Portal' : 'Login to Student Dashboard'}
+            <Button type="submit" fullWidth size="lg" disabled={isLoading}>
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Logging in...
+                </span>
+              ) : (
+                activeRole === 'faculty' ? 'Login to Faculty / TPO Portal' : 'Login to Student Dashboard'
+              )}
             </Button>
           </div>
-
-          {/* OR divider */}
-          <div className="relative flex items-center py-1">
-            <div className="flex-grow border-t border-gray-800" />
-            <span className="flex-shrink mx-4 text-xs font-bold text-gray-400 uppercase">or</span>
-            <div className="flex-grow border-t border-gray-800" />
-          </div>
-
-          <Button variant="secondary" fullWidth className="flex items-center justify-center gap-2.5">
-            <svg className="h-4 w-4 text-white" viewBox="0 0 488 512" fill="currentColor">
-              <path d="M488 261.8c0-17.8-1.6-35-4.6-51.6H249v97.6h134.3c-5.8 31.5-23.5 58.2-50.1 75.9v63.3h80.9c47.3-43.6 74.9-107.9 74.9-185.2z" />
-              <path d="M249 492c67.1 0 123.3-22.2 164.4-60.2l-80.9-63.3c-22.5 15.1-51.3 24-83.5 24-64.1 0-118.5-43.3-138-101.5H27.6v63.8C68.9 435 152.2 492 249 492z" />
-              <path d="M111 291.1c-9.7-27.5-9.7-57 0-84.5V143H27.6c-30.5 60.7-30.5 133.8 0 194.5l83.4-46.4z" />
-              <path d="M249 100.3c36.5-.6 71.5 13.6 98.1 38.5l73.3-73.3C385.5 21.4 331 0 274 0 152.2 0 68.9 57 27.6 143l83.4 63.6C130.5 143.6 185 100.3 249 100.3z" />
-            </svg>
-            Continue with Google
-          </Button>
         </form>
 
         <p className="text-center text-sm font-medium text-gray-400 pt-2 border-t border-gray-800">

@@ -3,11 +3,13 @@ import { PageHeader } from '../../components/shared/PageHeader';
 import { TrendingUp } from '../../components/icons/StitchIcons';
 import { Badge } from '../../components/ui/Badge';
 import { useAuth } from '../../context/AuthContext';
+import { apiService, type SkillGapAnalysisResult } from '../../services/api';
 import {
   Code2, Server, Cloud, BrainCircuit,
   CheckCircle2, RotateCcw, ChevronRight, Flame, Star,
   Target, BookOpen, AlertTriangle, TrendingDown,
   Cpu, Cog, Zap, Building2, CircuitBoard, Compass,
+  Loader2, Sparkles, Calendar,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -571,6 +573,9 @@ function GapResults({
   ratings: SkillRatings;
   onRetake: () => void;
 }) {
+  const [loadingRoadmap, setLoadingRoadmap] = useState(false);
+  const [aiRoadmap, setAiRoadmap] = useState<SkillGapAnalysisResult | null>(null);
+
   type SkillResult = {
     skill: Skill;
     userPct: number;
@@ -594,6 +599,19 @@ function GapResults({
   const avgUserPct = Math.round(results.reduce((s, r) => s + r.userPct, 0) / results.length);
   const avgBenchmark = Math.round(results.reduce((s, r) => s + r.benchmarkPct, 0) / results.length);
   const overallMatch = Math.min(100, Math.round((avgUserPct / avgBenchmark) * 100));
+
+  const generateAiRoadmap = async () => {
+    setLoadingRoadmap(true);
+    try {
+      const currentSkills = strong.map((s) => s.skill.name);
+      const data = await apiService.analyzeSkillGap(currentSkills, track.label, 'fresher');
+      setAiRoadmap(data);
+    } catch (err) {
+      console.warn('AI Roadmap request failed:', err);
+    } finally {
+      setLoadingRoadmap(false);
+    }
+  };
 
   const STATUS_META = {
     strong: {
@@ -763,6 +781,90 @@ function GapResults({
           </div>
         </div>
       )}
+
+      {/* AI Roadmap Generator Banner & Content */}
+      <div className="bg-[#FAF3DF] border border-[#CDC7AA]/50 rounded-2xl p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h4 className="text-sm font-black text-[#1E1C10] flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-[#6A5F00]" />
+              Gemini AI Personalized Placement Roadmap
+            </h4>
+            <p className="text-xs text-[#7C775F] mt-0.5">
+              Generate an adaptive week-by-week study plan targeting your identified gap areas.
+            </p>
+          </div>
+          <button
+            onClick={generateAiRoadmap}
+            disabled={loadingRoadmap}
+            className="px-4 py-2 bg-[#FFE600] text-[#1E1C10] text-xs font-black rounded-full hover:brightness-105 transition-all shadow-sm flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer self-start sm:self-auto"
+          >
+            {loadingRoadmap ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Generating Plan...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-3.5 w-3.5" />
+                {aiRoadmap ? 'Regenerate Plan' : 'Generate AI Study Plan'}
+              </>
+            )}
+          </button>
+        </div>
+
+        {aiRoadmap && (
+          <div className="space-y-4 pt-2 border-t border-[#CDC7AA]/30 animate-in fade-in">
+            {/* Meta overview */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <div className="bg-white p-3 rounded-xl border border-[#CDC7AA]/40 text-center">
+                <span className="text-[10px] font-bold text-[#7C775F] uppercase block">Benchmark Match</span>
+                <span className="text-base font-black text-[#006B5B] block mt-0.5">{aiRoadmap.match_percentage}%</span>
+              </div>
+              <div className="bg-white p-3 rounded-xl border border-[#CDC7AA]/40 text-center">
+                <span className="text-[10px] font-bold text-[#7C775F] uppercase block">Prep Timeline</span>
+                <span className="text-base font-black text-[#6A5F00] block mt-0.5">{aiRoadmap.estimated_weeks} Weeks</span>
+              </div>
+              <div className="bg-white p-3 rounded-xl border border-[#CDC7AA]/40 text-center col-span-2 sm:col-span-1">
+                <span className="text-[10px] font-bold text-[#7C775F] uppercase block">Top Priority</span>
+                <span className="text-xs font-black text-[#1E1C10] block mt-1 truncate">
+                  {aiRoadmap.priority_skills?.[0] || 'Core Concepts'}
+                </span>
+              </div>
+            </div>
+
+            {/* Weekly Roadmap Schedule */}
+            {aiRoadmap.roadmap && aiRoadmap.roadmap.length > 0 && (
+              <div className="space-y-2">
+                <span className="text-xs font-bold text-[#1E1C10] uppercase tracking-wider block">
+                  Curated Milestone Schedule
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {aiRoadmap.roadmap.map((m, idx) => (
+                    <div key={idx} className="bg-white p-3.5 rounded-xl border border-[#CDC7AA]/40 space-y-1">
+                      <div className="flex items-center gap-1.5 text-xs font-black text-[#6A5F00]">
+                        <Calendar className="h-3.5 w-3.5" />
+                        <span>Week {m.week}: {m.focus}</span>
+                      </div>
+                      <div className="text-[11px] text-[#4B4731] pl-5">
+                        {m.resources?.join(', ')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Placement tip */}
+            {aiRoadmap.placement_tip && (
+              <div className="p-3 bg-white border border-[#26FEDC]/50 rounded-xl text-xs text-[#006B5B] flex items-start gap-2">
+                <Sparkles className="h-4 w-4 shrink-0 text-[#006B5B] mt-0.5" />
+                <span><strong>Recruiter Tip:</strong> {aiRoadmap.placement_tip}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Re-take */}
       <div className="flex items-center justify-between pt-2">

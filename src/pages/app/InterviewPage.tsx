@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/shared/PageHeader';
 import { useAuth } from '../../context/AuthContext';
 import { Badge } from '../../components/ui/Badge';
+import { apiService } from '../../services/api';
 import {
   Mic,
   Play,
@@ -11,6 +12,7 @@ import {
   ArrowRight,
   HelpCircle,
   Award,
+  Loader2,
 } from 'lucide-react';
 
 interface RoleInterviewData {
@@ -205,6 +207,7 @@ export default function InterviewPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [feedback, setFeedback] = useState<QuestionFeedback | null>(null);
+  const [isEvaluating, setIsEvaluating] = useState(false);
   const [sessionCompleted, setSessionCompleted] = useState(false);
   const [answersSubmitted, setAnswersSubmitted] = useState<number>(0);
 
@@ -248,21 +251,54 @@ export default function InterviewPage() {
     }
   };
 
-  const handleSubmitAnswer = () => {
-    // Generate helpful, concise AI evaluation based on length and content
-    const length = userAnswer.trim().length;
-    const score = length > 120 ? 9.0 : length > 50 ? 8.0 : 7.0;
+  const handleSubmitAnswer = async () => {
+    if (!userAnswer.trim()) return;
+    setIsEvaluating(true);
 
-    setFeedback({
-      score,
-      strengths: [
-        'Structured thought process and clear technical terminology.',
-        'Directly addressed the core architectural requirement.',
-      ],
-      improvement:
-        'Consider mentioning concrete error handling or performance trade-offs (e.g. time vs space complexity).',
-    });
-    setAnswersSubmitted((prev) => prev + 1);
+    try {
+      const q = questions[currentQuestionIndex];
+      const prompt = `You are a technical interviewer evaluating a student candidate for the role: ${selectedRole}.
+Question: "${q}"
+Candidate Answer: "${userAnswer.trim()}"
+
+Evaluate this answer in valid JSON format only (no markdown fences, no explanatory text outside json):
+{
+  "score": 8.5,
+  "strengths": ["Clear explanation of core concepts", "Good real-world structure"],
+  "improvement": "Mention trade-offs, edge cases, or complexity metrics"
+}`;
+
+      const res = await apiService.chat(prompt, [], 'interview');
+      const clean = res.reply.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(clean);
+
+      setFeedback({
+        score: typeof parsed.score === 'number' ? parsed.score : 8.0,
+        strengths: Array.isArray(parsed.strengths) && parsed.strengths.length > 0
+          ? parsed.strengths
+          : ['Structured thought process and clear technical terminology.'],
+        improvement: typeof parsed.improvement === 'string' && parsed.improvement
+          ? parsed.improvement
+          : 'Consider mentioning concrete error handling or performance trade-offs.',
+      });
+    } catch (err) {
+      console.warn('AI evaluation fallback to local scoring:', err);
+      const length = userAnswer.trim().length;
+      const score = length > 120 ? 9.0 : length > 50 ? 8.0 : 7.0;
+
+      setFeedback({
+        score,
+        strengths: [
+          'Structured thought process and clear technical terminology.',
+          'Directly addressed the core architectural requirement.',
+        ],
+        improvement:
+          'Consider mentioning concrete error handling or performance trade-offs (e.g. time vs space complexity).',
+      });
+    } finally {
+      setIsEvaluating(false);
+      setAnswersSubmitted((prev) => prev + 1);
+    }
   };
 
   const handleNextQuestion = () => {
@@ -496,10 +532,20 @@ export default function InterviewPage() {
                   {!feedback ? (
                     <button
                       onClick={handleSubmitAnswer}
-                      disabled={!userAnswer.trim()}
-                      className="px-5 py-2.5 bg-[#FFE600] text-[#1E1C10] text-xs font-bold rounded-full shadow-sm hover:brightness-105 transition-all cursor-pointer disabled:opacity-50"
+                      disabled={!userAnswer.trim() || isEvaluating}
+                      className="px-5 py-2.5 bg-[#FFE600] text-[#1E1C10] text-xs font-bold rounded-full shadow-sm hover:brightness-105 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                     >
-                      Submit for AI Review
+                      {isEvaluating ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#6A5F00]" />
+                          Evaluating Answer...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-3.5 h-3.5 text-[#6A5F00]" />
+                          Submit for AI Review
+                        </>
+                      )}
                     </button>
                   ) : (
                     <button
