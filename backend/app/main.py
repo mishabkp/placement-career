@@ -6,7 +6,14 @@ from app.core.database import engine, Base
 import app.models  # noqa: F401 — ensures all models are registered with Base
 
 # ── Create all DB tables on startup ───────────────────────────────────────────
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as _db_err:
+    import logging as _log
+    _log.getLogger("placementpal").warning(
+        f"DB table creation skipped on startup: {_db_err}. "
+        "Server will still start — DB errors will surface per-request."
+    )
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
