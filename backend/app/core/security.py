@@ -1,23 +1,27 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db
 
-# ── Password hashing ───────────────────────────────────────────────────────────
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import bcrypt
 
+# ── Password hashing ───────────────────────────────────────────────────────────
 def hash_password(plain: str) -> str:
     """Hash a plain-text password with bcrypt."""
-    return pwd_context.hash(plain)
+    pwd_bytes = plain[:72].encode("utf-8")
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
 
 def verify_password(plain: str, hashed: str) -> bool:
     """Check plain password against stored bcrypt hash."""
-    return pwd_context.verify(plain, hashed)
+    try:
+        return bcrypt.checkpw(plain[:72].encode("utf-8"), hashed.encode("utf-8"))
+    except Exception:
+        return False
 
 
 # ── JWT Token ──────────────────────────────────────────────────────────────────
